@@ -1,5 +1,5 @@
 server:
-  port: 38080
+  port: 8080
   contextPath: /
   request:
     maxBodySize: 2048mb
