@@ -18,6 +18,16 @@ jwt:
   allowUseHeader: true #充许使用Header传递；（可不配，默认：使用 Cookie 传递）；true，则使用 header 传递
   expire: 864000000 # token超时时间，单位为毫秒
 
+repo:
+  type: local
+  local:
+    path: local_repo
+    listen: 0.0.0.0:9980
+  s3:
+    endpoint: http://192.168.66.122:1900
+    bucket: my-bucket
+    accessKey: vUR3oLMF5ds8gWCP
+    secretKey: odWFIZukYrw9dY0G5ezDKMZWbhU0S4oD
 
 solon:
 #  debug: 1
@@ -52,7 +62,7 @@ spring:
 #  database:
 #    type: mysql
 #  datasource:
-#    url: jdbc:mysql://192.168.66.100:3306/bdcm?characterEncoding=utf-8&useSSL=false&autoReconnect=true
+#    url: jdbc:mysql://192.168.66.122:3306/bdcm?characterEncoding=utf-8&useSSL=false&autoReconnect=true
 #    username: root
 #    password: 666666
 #
@@ -60,7 +70,7 @@ spring:
 #  database:
 #    type: mysql
 #  datasource:
-#    url: jdbc:mysql://192.168.66.100:13306/bdcm?characterEncoding=utf-8&useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
+#    url: jdbc:mysql://192.168.66.122:13306/bdcm?characterEncoding=utf-8&useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
 #    username: root
 #    password: 666666
 #
@@ -68,7 +78,7 @@ spring:
 #  database:
 #    type: postgresql
 #  datasource:
-#    url: jdbc:postgresql://192.168.66.100:5432/bdcm?&ssl=false
+#    url: jdbc:postgresql://192.168.66.122:5432/bdcm?&ssl=false
 #    username: postgres
 #    password: 666666
 #
