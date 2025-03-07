@@ -15,6 +15,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+/**
+ * "repo" 是 "repository" 的缩写。
+ * 在软件开发和版本控制的 context 中，"repository" 指的是一个存储和管理代码、文件和其他数据的中央位置。例如，Git 仓库就是一个代码 repository。
+ * 因此，"repo" 是一个常用的缩写，用于指代代码仓库、软件仓库或其他类型的 repository。
+ */
+
 @Configuration
 public class RepoConfig {
     static Logger logger = LoggerFactory.getLogger(RepoConfig.class);
