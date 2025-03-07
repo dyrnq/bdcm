@@ -11,6 +11,11 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class MinioFileUploaderTest {
+
+    static final String accessKey = "vUR3oLMF5ds8gWCP";
+    static final String secretKey = "odWFIZukYrw9dY0G5ezDKMZWbhU0S4oD";
+    static final String bucket = "my-bucket";
+
     public static void main(String[] args)
             throws IOException, NoSuchAlgorithmException, InvalidKeyException {
 
@@ -22,24 +27,23 @@ public class MinioFileUploaderTest {
             MinioClient minioClient =
                     MinioClient.builder()
                             .endpoint("192.168.66.122", 19000, false)
-                            .credentials("vUR3oLMF5ds8gWCP", "odWFIZukYrw9dY0G5ezDKMZWbhU0S4oD")
+                            .credentials(accessKey, secretKey)
                             .build();
 
             // Make 'my-bucket' bucket if not exist.
             boolean found =
-                    minioClient.bucketExists(BucketExistsArgs.builder().bucket("my-bucket").build());
+                    minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
             if (!found) {
                 // Make a new bucket called 'my-bucket'.
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket("my-bucket").build());
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
             } else {
-                System.out.println("Bucket 'my-bucket' already exists.");
+                System.out.println("Bucket '" + bucket + "' already exists.");
             }
 
-            // Upload 'pom.xml' as object name 'pom.xml' to bucket
-            // 'asiatrip'.
+            // Upload 'pom.xml' as object name 'pom.xml' to bucket 'my-bucket'.
             minioClient.uploadObject(
                     UploadObjectArgs.builder()
-                            .bucket("my-bucket")
+                            .bucket(bucket)
                             .object("pom.xml")
                             .filename("pom.xml")
                             .build());
