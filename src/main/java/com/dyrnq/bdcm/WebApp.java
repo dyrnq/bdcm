@@ -149,10 +149,11 @@ public class WebApp {
             ctx.attrSet("jsrandom", VersionUtils.getVersion() + "." + System.currentTimeMillis());
             ctx.attrSet("cookieMap", ctx.cookieMap());
             try {
-                if (StringUtils.equalsIgnoreCase(I18nUtil.getLocaleResolver().getLocale(ctx).getDisplayLanguage(), "English")) {
-                    ctx.attrSet("langType", "English");
-                } else if (StringUtils.equalsIgnoreCase(I18nUtil.getLocaleResolver().getLocale(ctx).getDisplayLanguage(), "Chinese")) {
+                String ctxDisplayLanguage = I18nUtil.getLocaleResolver().getLocale(ctx).getDisplayLanguage();
+                if (StringUtils.equalsIgnoreCase(ctxDisplayLanguage, "Chinese") || StringUtils.equalsIgnoreCase(ctxDisplayLanguage, "中文")) {
                     ctx.attrSet("langType", "简体中文");
+                } else {
+                    ctx.attrSet("langType", "English");
                 }
             } catch (Exception e) {
                 ctx.attrSet("langType", "简体中文");
