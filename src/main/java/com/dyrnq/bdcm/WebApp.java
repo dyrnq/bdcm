@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm;
 
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.dyrnq.bdcm.model.User;
@@ -15,14 +16,13 @@ import org.noear.snack.ONode;
 import org.noear.solon.Solon;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
-import org.noear.solon.core.handle.Context;
-import org.noear.solon.core.handle.Filter;
-import org.noear.solon.core.handle.FilterChain;
-import org.noear.solon.core.handle.Handler;
+import org.noear.solon.core.exception.StatusException;
+import org.noear.solon.core.handle.*;
 import org.noear.solon.core.route.RouterInterceptor;
 import org.noear.solon.core.route.RouterInterceptorChain;
 import org.noear.solon.i18n.I18nUtil;
 import org.noear.solon.scheduling.annotation.EnableScheduling;
+import org.noear.solon.validation.ValidatorException;
 import org.noear.solon.view.freemarker.FreemarkerRender;
 import org.noear.wood.WoodConfig;
 import org.slf4j.Logger;
@@ -326,6 +326,31 @@ public class WebApp {
             }
 
             chain.doIntercept(ctx, mainHandler);
+        }
+    }
+
+    @Component(index = 0) //index 为顺序位（不加，则默认为0）
+    public static class AppExceptionFilter implements Filter {
+        @Override
+        public void doFilter(Context ctx, FilterChain chain) throws Throwable {
+            try {
+                chain.doFilter(ctx);
+            } catch (ValidatorException e) {
+                ctx.render(Result.failure(e.getCode(), e.getMessage())); //e.getResult().getDescription()
+            } catch (StatusException e) {
+                logger.error(e.getMessage(), e);
+                if (e.getCode() == 404) {
+                    ctx.status(e.getCode());
+                } else {
+                    String msg = e.getMessage();
+                    if (ExceptionUtil.getRootCause(e) != null && ExceptionUtil.getRootCause(e).getMessage() != null) {
+                        msg = ExceptionUtil.getRootCause(e).getMessage();
+                    }
+                    ctx.render(Result.failure(e.getCode(), msg));
+                }
+            } catch (Throwable e) {
+                ctx.render(Result.failure(500, "服务端运行出错"));
+            }
         }
     }
 }
