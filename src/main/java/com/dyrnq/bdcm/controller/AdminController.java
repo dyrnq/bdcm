@@ -23,9 +23,9 @@ public class AdminController extends BaseController {
     CfgExtractor cfgExtractor;
 
 
-    @Mapping("inst")
+    @Mapping("artifact")
     public Object inst() {
-        ModelAndView model = new ModelAndView("admin/inst.html");
+        ModelAndView model = new ModelAndView("admin/artifact.html");
         return model;
     }
 

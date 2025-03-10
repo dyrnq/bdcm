@@ -2,7 +2,7 @@ package com.dyrnq.bdcm.controller.api;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.PageUtil;
-import com.dyrnq.bdcm.controller.BaseController;
+import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
 import com.dyrnq.bdcm.dso.UserMapper;
 import com.dyrnq.bdcm.model.User;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @Mapping("api/user")
 @Controller
-public class UserController extends BaseController {
+public class UserController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(UserController.class);
     @Inject
     UserMapper userMapper;
