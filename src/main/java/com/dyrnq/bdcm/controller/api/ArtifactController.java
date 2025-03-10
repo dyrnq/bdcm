@@ -3,26 +3,27 @@ package com.dyrnq.bdcm.controller.api;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
-import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
 import org.noear.solon.core.handle.Context;
 import org.noear.solon.core.handle.Result;
+import org.noear.solon.validation.annotation.Numeric;
+import org.noear.solon.validation.annotation.Valid;
 import org.noear.wood.IPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Date;
 
 @Mapping("api/artifact")
 @Controller
+@Valid
 public class ArtifactController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtifactController.class);
     @Inject
@@ -41,6 +42,7 @@ public class ArtifactController extends ApiController {
     }
 
     @Mapping("add")
+    @Numeric("id")
     public Result add(Context ctx, Artifact artifact) {
         try {
             Long id =IDUtils.getLongID();
@@ -48,6 +50,8 @@ public class ArtifactController extends ApiController {
             if(ObjectUtil.isNull(artifact.getId())){
                 artifact.setId(id);
             }
+            artifact.setUpdateTime(new Date());
+            artifact.setInsertTime(new Date());
             artifactMapper.insert(artifact, true);
             return Result.succeed("ok");
         } catch (Exception e) {
@@ -83,6 +87,7 @@ public class ArtifactController extends ApiController {
     @Mapping("update")
     public Result update(Context ctx, Artifact artifact) {
         try {
+            artifact.setUpdateTime(new Date());
             artifactMapper.updateById(artifact, true);
             return Result.succeed("ok");
         } catch (Exception e) {

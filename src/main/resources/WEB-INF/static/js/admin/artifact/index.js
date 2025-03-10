@@ -112,6 +112,8 @@ $('#addOver').click(function(){
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
             , {field: 'name', title: 'name', width: 200}
             , {field: 'url', title: 'url', width: 300, sort: true}
+            , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
+            , {field: 'updateTime', title: 'update_time', sort: true, width: 300, templet: "<div>{{!d.updateTime?'-':layui.util.toDateString(d.updateTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
 
         ]]
@@ -156,10 +158,10 @@ $('#addOver').click(function(){
     table.on('toolbar(test)', function (obj) {
         var checkStatus = table.checkStatus(obj.config.id);
         switch (obj.event) {
-            case 'getCheckData':
-                var dataX = checkStatus.data;
-                layer.alert(JSON.stringify(dataX));
-                break;
+//            case 'getCheckData':
+//                var dataX = checkStatus.data;
+//                layer.alert(JSON.stringify(dataX));
+//                break;
             case 'deleteSelected':
                 var dataX = checkStatus.data;
                 var allId = [];
@@ -231,9 +233,7 @@ $('#addOver').click(function(){
         if(layEvent === 'detail'){ //查看
 
         } else if(layEvent === 'del'){ //删除
-            if(obj.data.id == "1") {
-                layer.msg(commonStr.cantDel)
-            }else{
+
                 layer.confirm(commonStr.confirmDel, function(index){
 
                     $.ajax({
@@ -257,7 +257,7 @@ $('#addOver').click(function(){
 
                     layer.close(index);
                 });
-            }
+
         } else if (layEvent === 'edit'){
 
                 //console.log(obj.data.id);
