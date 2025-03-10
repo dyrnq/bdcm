@@ -12,7 +12,7 @@ import java.util.Date;
 public class Artifact {
     @Column("id")
     @PrimaryKey
-    private String id;
+    private Long id;
 
     @Column("url")
     private String url;

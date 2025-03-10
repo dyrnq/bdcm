@@ -1,6 +1,7 @@
 package com.dyrnq.bdcm.controller.api;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.controller.ApiController;
@@ -42,9 +43,9 @@ public class ArtifactController extends ApiController {
     @Mapping("add")
     public Result add(Context ctx, Artifact artifact) {
         try {
-            String id =IDUtils.getLongIDAsString();
+            Long id =IDUtils.getLongID();
             logger.info("id={}",id);
-            if(StrUtil.isBlank(artifact.getId())){
+            if(ObjectUtil.isNull(artifact.getId())){
                 artifact.setId(id);
             }
             artifactMapper.insert(artifact, true);
@@ -56,9 +57,9 @@ public class ArtifactController extends ApiController {
     }
 
     @Mapping("del")
-    public Result del(Context ctx, String... id) {
+    public Result del(Context ctx, long... id) {
         try {
-            for (String i : id) {
+            for (long i : id) {
                 artifactMapper.deleteById(i);
             }
             return Result.succeed("ok");
@@ -69,7 +70,7 @@ public class ArtifactController extends ApiController {
     }
 
     @Mapping("get")
-    public Result get(Context ctx, String id) {
+    public Result get(Context ctx, long id) {
         try {
             Artifact artifact = artifactMapper.selectById(id);
             return Result.succeed(artifact);
