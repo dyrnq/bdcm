@@ -17,6 +17,24 @@ done
 
 IFS=',' read -r -a mirrors_arr <<< ${mirrors}
 
+echo "check jq whether installed..."
+if command -v jq >/dev/null 2>&1; then
+    echo "check: OK; /etc/docker/daemon.json is writable."
+else
+    echo "check: failed; jq not installed. please install it."
+    exit 1
+fi
+
+echo "check /etc/docker/daemon.json whether exists and writable..."
+
+if [ ! -w "/etc/docker/daemon.json" ]; then
+    echo "check: failed; /etc/docker/daemon.json not writable, please check it."
+    exit 1
+else
+    echo "check: OK; /etc/docker/daemon.json is writable."
+fi
+
+
 echo "current mirrors:"
 jq -r ".\"registry-mirrors\"" /etc/docker/daemon.json
 
