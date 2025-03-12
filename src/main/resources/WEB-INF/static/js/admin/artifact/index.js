@@ -134,7 +134,7 @@ $('#addOver').click(function(){
             , {field: 'name', title: 'name', width: 200}
             , {field: 'url', title: 'url', width: 300, sort: true}
             , {field: 'autoJob', title: 'autoJob' }
-            , {field: 'lock', title: '_lock' }
+            , {field: 'lock', title: '_lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>" }
             , {field: 'currentJobId', title: 'currentJobId' }
             , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'updateTime', title: 'update_time', sort: true, width: 300, templet: "<div>{{!d.updateTime?'-':layui.util.toDateString(d.updateTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
