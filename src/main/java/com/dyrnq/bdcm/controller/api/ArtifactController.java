@@ -101,7 +101,7 @@ public class ArtifactController extends ApiController {
     }
 
     @Mapping("/download")
-    public String download(List<String> ids){
+    public String download(List<Long> ids){
         try {
             return artifactService.download(ids);
         } catch (Exception e) {

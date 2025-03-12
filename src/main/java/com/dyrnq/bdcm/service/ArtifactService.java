@@ -66,7 +66,7 @@ public class ArtifactService {
         //循环调用线程池进行下载任务。
         for (Long id : ids) {
             ThreadPoolUtils.execute(() -> {
-                downLoad(id);
+                download(id);
             });
         }
 
@@ -74,7 +74,7 @@ public class ArtifactService {
     }
 
     //单文件下载
-    private String downLoad(Long id) {
+    public String download(Long id) {
         //根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
         //查看任务锁状态，如果是下载中，驳回下载请求
