@@ -134,6 +134,7 @@ $('#addOver').click(function(){
             , {field: 'name', title: 'name', width: 200}
             , {field: 'url', title: 'url', width: 300, sort: true}
             , {field: 'status', title: 'status' }
+            , {field: 'progress', title: 'progress' }
             , {field: 'beginTime', title: 'beginTime', sort: true, width: 300, templet: "<div>{{!d.beginTime?'-':layui.util.toDateString(d.beginTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'endTime', title: 'endTime', sort: true, width: 300, templet: "<div>{{!d.endTime?'-':layui.util.toDateString(d.endTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
