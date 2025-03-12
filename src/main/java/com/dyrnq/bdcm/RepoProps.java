@@ -6,12 +6,14 @@ import lombok.NoArgsConstructor;
 import org.noear.solon.annotation.BindProps;
 import org.noear.solon.annotation.Configuration;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Configuration
 @BindProps(prefix="repo")
-public class RepoProps {
+public class RepoProps implements Serializable {
     private String type;
     private RepoLocal local = new RepoLocal();
     private RepoS3 s3 = new RepoS3();

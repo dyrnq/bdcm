@@ -1,6 +1,6 @@
 package com.dyrnq.bdcm;
 
-import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import io.undertow.Undertow;
@@ -34,9 +34,7 @@ public class RepoConfig {
     }
 
     private void info() {
-
-        RepoProps repo = new RepoProps();
-        BeanUtil.copyProperties(repoProps(), repo, true);
+        RepoProps repo = ObjectUtil.cloneByStream(repoProps());
         if (repo.getS3() != null) {
             if (repo.getS3().getAccessKey() != null) {
                 repo.getS3().setAccessKey("******");
@@ -46,6 +44,7 @@ public class RepoConfig {
             }
         }
         logger.info("***************repoType={}", JSONUtil.toJsonStr(repo));
+//        logger.info("***************repoType={}", JSONUtil.toJsonStr(repoProps()));
     }
 
     @Init
