@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import io.undertow.Undertow;
@@ -32,18 +33,24 @@ public class RepoConfig {
         return repoProps;
     }
 
-    @Init
-    public void init() {
-        RepoProps repoProps = repoProps();
-        if (repoProps.getS3() != null) {
-            if (repoProps.getS3().getAccessKey() != null) {
-                repoProps.getS3().setAccessKey("******");
+    private void info() {
+
+        RepoProps repo = new RepoProps();
+        BeanUtil.copyProperties(repoProps(), repo, true);
+        if (repo.getS3() != null) {
+            if (repo.getS3().getAccessKey() != null) {
+                repo.getS3().setAccessKey("******");
             }
-            if (repoProps.getS3().getSecretKey() != null) {
-                repoProps.getS3().setSecretKey("******");
+            if (repo.getS3().getSecretKey() != null) {
+                repo.getS3().setSecretKey("******");
             }
         }
-        logger.info("***************repoType={}", JSONUtil.toJsonStr(repoProps));
+        logger.info("***************repoType={}", JSONUtil.toJsonStr(repo));
+    }
+
+    @Init
+    public void init() {
+        info();
         if (StrUtil.equalsIgnoreCase("local", repoProps().getType())) {
             if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
                 if (StrUtil.isNotBlank(repoProps().getLocal().getPath())) {
