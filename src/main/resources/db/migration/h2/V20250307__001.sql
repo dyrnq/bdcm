@@ -35,3 +35,11 @@ INSERT INTO `user` VALUES ('1', 'admin','hello@admin.com','13988888888', '$2a$12
 insert into `artifact` (`id`, `name`, `url`) values (686793170459835100, 'tomcat', 'https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.24/bin/apache-tomcat-10.1.24.tar.gz');
 insert into `artifact` (`id`, `name`, `url`) values (686795975078542200, 'maven', 'https://archive.apache.org/dist/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.tar.gz');
 insert into `artifact` (`id`, `name`, `url`) values (686856938303594769, 'kube-apiserver', 'https://dl.k8s.io/v1.32.2/bin/linux/amd64/kube-apiserver');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594771, 'cfssl', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594772, 'cfssljson', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssljson_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594773, 'cfssl-bundle', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl-bundle_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594774, 'cfssl-certinfo', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl-certinfo_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594775, 'cfssl-newkey', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl-newkey_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`) values (686856938303594776, 'cfssl-scan', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl-scan_1.6.5_linux_amd64');
+insert into `artifact` (`id`, `name`, `url`, `auto_job`) values (686856938303594777, 'mkbundle', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/mkbundle_1.6.5_linux_amd64',1);
+insert into `artifact` (`id`, `name`, `url`, `auto_job`) values (686856938303594778, 'multirootca', 'https://github.com/cloudflare/cfssl/releases/download/v1.6.5/multirootca_1.6.5_linux_amd64',1);
