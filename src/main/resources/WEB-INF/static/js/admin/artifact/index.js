@@ -9,6 +9,8 @@
 //editor1.resize();
 
 function cleanData(d){
+    console.log(d)
+    $('#addForm1 input, #addForm1 select, #addForm1 textarea, #addForm1 checkbox').val('');
     if( d === true ){
         $("#div_id").hide();
         $('#addForm1 input[name="u"]').val("update");
@@ -16,13 +18,12 @@ function cleanData(d){
         $('#addForm1 input[name="u"]').val("add");
         $("#div_id").show();
     }
+    layui.form.render('select');
+    layui.form.render('checkbox');
 
-    $('#addForm1 input[name="id"]').val("");
-    $('#addForm1 input[name="name"]').val("");
-    $('#addForm1 input[name="url"]').val("");
-    $('#addForm1 input[name="apiKey"]').val("");
-    $('#addForm1 input[name="agentUrl"]').val("");
-    $('#addForm1 input[name="agentApiKey"]').val("");
+//    console.log($('#addForm1 input[name="autoJob"]').val())
+    $('#addForm1 input[name="autoJob"]').prop('checked', true);
+
 }
 
 function addLink(d) {
@@ -49,6 +50,18 @@ if ('' == default_limt || null == default_limt || undefined == default_limt) {
     default_limt = cfg.pageLimit;
 }
 
+form.on('switch(demo-checkbox-filter)', function(data){
+    var elem = data.elem; // 获得 checkbox 原始 DOM 对象
+    var checked = elem.checked; // 获得 checkbox 选中状态
+    var value = elem.value; // 获得 checkbox 值
+    var othis = data.othis; // 获得 checkbox 元素被替换后的 jQuery 对象
+    if(checked){
+        $(elem).val("1");
+    }else{
+        $(elem).val("0");
+    }
+    console.log('checked 状态: '+ elem.checked);
+});
 
 $('#add').click(function(){
     cleanData(false);
@@ -68,10 +81,18 @@ $('#add').click(function(){
 
 $('#addOver').click(function(){
     let u = $('#addForm1 input[name="u"]').val();
+    var formData = $('#addForm1').serialize();
+    //console.log(formData);
+    //判断有没有勾选autoJob，此处比较罗嗦，有更好的方法欢迎留言
+    var paramName = 'autoJob'; // 要判断的参数名
+    var paramValue = '0'; // 要增加的参数值
+    if (formData.indexOf(paramName + '=') === -1) {
+      formData += '&' + paramName + '=' + paramValue;
+    }
     $.ajax({
         type : 'POST',
         url: ctx + '/api/artifact/'+u,
-        data : $('#addForm1').serialize(),
+        data : formData,
         dataType : 'json',
         success : function(data) {
             if(data.code=='200'){
@@ -112,6 +133,7 @@ $('#addOver').click(function(){
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
             , {field: 'name', title: 'name', width: 200}
             , {field: 'url', title: 'url', width: 300, sort: true}
+            , {field: 'autoJob', title: 'autoJob' }
             , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'updateTime', title: 'update_time', sort: true, width: 300, templet: "<div>{{!d.updateTime?'-':layui.util.toDateString(d.updateTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
@@ -271,12 +293,23 @@ $('#addOver').click(function(){
 
 
                         if(data.code=='200'){
-                            $('#addForm1 input[name="id"]').val(data.data.id);
-                            $('#addForm1 input[name="name"]').val(data.data.name);
-                            $('#addForm1 input[name="url"]').val(data.data.url);
-                            $('#addForm1 input[name="apiKey"]').val(data.data.apiKey);
-                            $('#addForm1 input[name="agentUrl"]').val(data.data.agentUrl);
-                            $('#addForm1 input[name="agentApiKey"]').val(data.data.agentApiKey);
+
+                            //批量回添数据
+                            $('#addForm1 input, #addForm1 select, #addForm1 textarea, #addForm1 checkbox').each(function() {
+                              var elementName = $(this).attr('name');
+                              if (elementName in data.data) { // 判断对象中是否有该属性
+                                $(this).val(data.data[elementName]); // 将属性对应的值填充到表单元素中
+                              }
+                              if ( elementName == 'autoJob') {
+                                if (data.data[elementName] == 1) {
+                                    $(this).prop('checked', true);
+                                }else {
+                                    $(this).prop('checked', false);
+                                }
+                              }
+                            });
+                            layui.form.render('select');
+                            layui.form.render('checkbox');
 
                             layer.open({
                                 type: 1,
