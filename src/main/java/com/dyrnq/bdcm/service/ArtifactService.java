@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm.service;
 
+import com.dyrnq.bdcm.HomeDir;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.ArtJob;
@@ -7,14 +8,14 @@ import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
 import com.dyrnq.utils.ThreadPoolUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.core.internal.util.CollectionsUtils;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Files;
@@ -27,21 +28,24 @@ import java.util.List;
 @Component
 public class ArtifactService {
 
+    static Logger logger = LoggerFactory.getLogger(ArtifactService.class);
+    @Inject
+    HomeDir homeDir;
     @Db
-    static
+
     ArtifactMapper artifactMapper;
 
     @Db
-    static
+
     ArtJobMapper artJobMapper;
 
     @Inject("${repo.local.path}")
-    static
+
     String folder;
 
     //下载接口
-    public String download(List<String> ids){
-        if( ids == null ||ids.isEmpty()){
+    public String download(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
             log.info("未传入任何ID");
             return "未传入任何ID";
         }
@@ -52,24 +56,25 @@ public class ArtifactService {
             try {
                 // 如果不存在，创建文件夹
                 Files.createDirectories(path);
-                log.info("文件夹创建成功: {}",path);
+                log.info("文件夹创建成功: {}", path);
             } catch (Exception e) {
-                log.error("创建文件夹时出错: {}",e.getMessage());
+                log.error("创建文件夹时出错: {}", e.getMessage());
             }
         } else {
             log.info("文件夹已存在:{}", path);
         }
         //循环调用线程池进行下载任务。
-        for(String id: ids){
+        for (Long id : ids) {
             ThreadPoolUtils.execute(() -> {
-                ArtifactService.downLoadOne(id);
+                downLoad(id);
             });
         }
 
         return "下载任务已提交";
     }
+
     //单文件下载
-    private static String downLoadOne(String id) {
+    private String downLoad(Long id) {
         //根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
         //查看任务锁状态，如果是下载中，驳回下载请求
@@ -79,7 +84,7 @@ public class ArtifactService {
             //加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
-            artifactMapper.updateById(artifact,false);
+            artifactMapper.updateById(artifact, false);
             //提交部分下载记录
             ArtJob job = new ArtJob();
             Long jobId = IDUtils.getLongID();
@@ -88,7 +93,7 @@ public class ArtifactService {
             job.setBeginTime(new Date());
             job.setArtId(artifact.getId());
             job.setUserId("1");
-            artJobMapper.insert(job,false);
+            artJobMapper.insert(job, false);
             String fileURL = artifact.getUrl();
             String rawUrl = fileURL.split("//")[1];
             String saveFilePath = folder + "/" + rawUrl;
@@ -100,27 +105,27 @@ public class ArtifactService {
                 job.setEndTime(new Date());
                 job.setStatus(1);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
                 job.setEndTime(new Date());
                 job.setStatus(2);
             }
             //补足下载结果与完成时间。
-            artJobMapper.updateById(job,false);
+            artJobMapper.updateById(job, false);
             //更新任务信息表
             artifact.setLock(0);
             artifact.setCurrentJobId(job.getId());
             artifact.setFinalStatus(job.getStatus());
-            artifactMapper.updateById(artifact,false);
+            artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
-        }else {
+        } else {
             log.info("该任务下载功能暂被占用，请稍候。");
             return "该任务下载功能暂被占用，请稍候。";
         }
     }
 
-    public static void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy) throws IOException {
+    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy) throws IOException {
         File file = new File(saveFilePath);
-        File progressFile = new File(saveFilePath + ".progress"); // 进度文件
+        File progressFile = new File(homeDir.getTmpAbsolutePath() + ".progress"); // 进度文件
         long existingFileSize = 0;
 
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
@@ -130,10 +135,10 @@ public class ArtifactService {
                 remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
             }
             if (remoteFileSize == file.length()) {
-                System.out.println("该文件已存在且完整，无需重新下载");
+                logger.info("该文件已存在且完整，无需重新下载");
                 return; // 文件已存在且完整，直接返回
             } else {
-                System.out.println("文件已存在但不完整，继续下载");
+                logger.info("文件已存在但不完整，继续下载");
                 existingFileSize = file.length();
             }
         }
@@ -144,7 +149,7 @@ public class ArtifactService {
                 byte[] bytes = new byte[Long.BYTES];
                 fis.read(bytes);
                 existingFileSize = bytesToLong(bytes);
-                System.out.println("检测到未完成的下载，继续从 " + formatFileSize(existingFileSize) + " 开始下载");
+                logger.info("检测到未完成的下载，继续从 " + formatFileSize(existingFileSize) + " 开始下载");
             }
         }
 
@@ -164,9 +169,9 @@ public class ArtifactService {
             connection.setConnectTimeout(5000); // 设置连接超时时间为 5 秒
             connection.setReadTimeout(5000); // 设置读取超时时间为 5 秒
             connection.connect();
-            System.out.println("直接连接成功，无需使用代理");
+            logger.info("直接连接成功，无需使用代理");
         } catch (IOException e) {
-            System.out.println("直接连接失败，尝试使用代理...");
+            logger.info("直接连接失败，尝试使用代理...");
             useProxy = true;
         }
 
@@ -177,11 +182,11 @@ public class ArtifactService {
 
         // 获取文件总大小
         long fileSize = connection.getContentLengthLong() + existingFileSize;
-        System.out.println("文件总大小: " + formatFileSize(fileSize));
+        logger.info("文件总大小: " + formatFileSize(fileSize));
 
         // 检查服务器是否支持断点续传
         if (connection.getResponseCode() != HttpURLConnection.HTTP_PARTIAL) {
-            System.out.println("服务器不支持断点续传，从头开始下载");
+            logger.info("服务器不支持断点续传，从头开始下载");
             existingFileSize = 0;
             connection.disconnect();
             connection = createConnection(fileURL, useProxy ? proxy : null, existingFileSize);
@@ -206,7 +211,7 @@ public class ArtifactService {
 
                 // 计算并显示下载进度
                 double progress = (double) totalBytesRead / fileSize * 100;
-                System.out.printf("下载进度: %.2f%% (%s/%s)%n",
+                logger.info("下载进度: %.2f%% (%s/%s)%n",
                         progress,
                         formatFileSize(totalBytesRead),
                         formatFileSize(fileSize));
@@ -227,7 +232,7 @@ public class ArtifactService {
     /**
      * 创建 HttpURLConnection 连接
      */
-    private static HttpURLConnection createConnection(String fileURL, Proxy proxy, long existingFileSize) throws IOException {
+    private HttpURLConnection createConnection(String fileURL, Proxy proxy, long existingFileSize) throws IOException {
         URL url = new URL(fileURL);
         HttpURLConnection connection;
         if (proxy != null) {
@@ -242,7 +247,7 @@ public class ArtifactService {
     /**
      * 获取远程文件的大小
      */
-    private static long getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
+    private long getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
         URL url = new URL(fileURL);
         HttpURLConnection connection;
         if (proxy != null) {
@@ -261,7 +266,7 @@ public class ArtifactService {
     /**
      * 更新进度文件
      */
-    private static void updateProgressFile(File progressFile, long totalBytesRead) throws IOException {
+    private void updateProgressFile(File progressFile, long totalBytesRead) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(progressFile)) {
             fos.write(longToBytes(totalBytesRead));
         }
@@ -270,7 +275,7 @@ public class ArtifactService {
     /**
      * 将 long 转换为字节数组
      */
-    private static byte[] longToBytes(long value) {
+    private byte[] longToBytes(long value) {
         byte[] bytes = new byte[Long.BYTES];
         for (int i = 0; i < Long.BYTES; i++) {
             bytes[i] = (byte) (value >> (8 * i));
@@ -281,7 +286,7 @@ public class ArtifactService {
     /**
      * 将字节数组转换为 long
      */
-    private static long bytesToLong(byte[] bytes) {
+    private long bytesToLong(byte[] bytes) {
         long value = 0;
         for (int i = 0; i < Long.BYTES; i++) {
             value |= ((long) bytes[i] & 0xFF) << (8 * i);
@@ -292,7 +297,7 @@ public class ArtifactService {
     /**
      * 格式化文件大小（将字节转换为更易读的单位，如 KB、MB、GB）
      */
-    private static String formatFileSize(long size) {
+    private String formatFileSize(long size) {
         if (size < 1024) {
             return size + " B";
         } else if (size < 1024 * 1024) {
