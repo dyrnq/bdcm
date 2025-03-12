@@ -23,7 +23,7 @@ public class ArtifactAutoDownloadJob implements Runnable {
 
     @Override
     public void run() {
-        logger.info("开始ArtifactAutoDownloadJob..................");
+        logger.debug("开始ArtifactAutoDownloadJob..................");
 
         Act1<MapperWhereQ> condition = mapperWhereQ -> {
             //mapperWhereQ.whereEq("auto_job", 1).andNeq("_lock", 1).limit(1);
@@ -44,7 +44,7 @@ public class ArtifactAutoDownloadJob implements Runnable {
             ids.add(artifact.getId());
             artifactService.download(ids);
         } else {
-            logger.info("没有需要下载的");
+            logger.debug("没有需要下载的");
         }
     }
 }
