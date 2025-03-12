@@ -14,6 +14,20 @@ CREATE TABLE `artifact` (
   `insert_time` TIMESTAMP DEFAULT NULL ,
   `update_time` TIMESTAMP DEFAULT NULL ,
   `final_status` INT DEFAULT NULL,
+  `_lock` INT DEFAULT NULL,
+  `begin_lock` TIMESTAMP DEFAULT NULL ,
+  `auto_job` INT DEFAULT NULL,
+  `current_job_id` BIGINT DEFAULT NULL ,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `art_job` (
+  `id` BIGINT NOT NULL ,
+  `art_id` BIGINT NOT NULL ,
+  `user_id` varchar(40) NOT NULL ,
+  `status` INT DEFAULT NULL,
+  `begin_time` TIMESTAMP DEFAULT NULL ,
+  `end_time` TIMESTAMP DEFAULT NULL ,
   PRIMARY KEY (`id`)
 );
 

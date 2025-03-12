@@ -28,4 +28,17 @@ public class Artifact {
 
     @Column("name")
     private String name;
+
+    @Column("_lock")
+    private Integer lock;
+
+    @Column("begin_lock")
+    private Date beginLock;
+
+    @Column("auto_job")
+    private Integer autoJob;
+
+    @Column("current_job_id")
+    private Integer currentJobId;
+
 }
