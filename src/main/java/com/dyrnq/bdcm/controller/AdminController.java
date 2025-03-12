@@ -24,8 +24,13 @@ public class AdminController extends BaseController {
 
 
     @Mapping("artifact")
-    public Object inst() {
+    public Object artifact() {
         ModelAndView model = new ModelAndView("admin/artifact.html");
+        return model;
+    }
+    @Mapping("artJob")
+    public Object artJob() {
+        ModelAndView model = new ModelAndView("admin/artJob.html");
         return model;
     }
 
