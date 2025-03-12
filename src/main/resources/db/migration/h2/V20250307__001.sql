@@ -28,6 +28,7 @@ CREATE TABLE `art_job` (
   `status` INT DEFAULT NULL,
   `begin_time` TIMESTAMP DEFAULT NULL ,
   `end_time` TIMESTAMP DEFAULT NULL ,
+  `progress` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
 

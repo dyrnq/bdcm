@@ -81,13 +81,16 @@ public class ArtifactService {
         if (artifact.getLock() == null || artifact.getLock() == 0) {
             //通过URL执行下载任务。
             log.info("开始执行文件 {} 的下载任务...", artifact.getName());
+
+            Long jobId = IDUtils.getLongID();
             //加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
+            artifact.setCurrentJobId(jobId);
             artifactMapper.updateById(artifact, false);
             //提交部分下载记录
             ArtJob job = new ArtJob();
-            Long jobId = IDUtils.getLongID();
+
             job.setId(jobId);
             job.setStatus(0);
             job.setBeginTime(new Date());
@@ -101,7 +104,7 @@ public class ArtifactService {
             Proxy proxy = null;
 
             try {
-                downloadFileWithResume(fileURL, saveFilePath, proxy);
+                downloadFileWithResume(fileURL, saveFilePath, proxy, jobId);
                 job.setEndTime(new Date());
                 job.setStatus(1);
             } catch (IOException e) {
@@ -113,7 +116,7 @@ public class ArtifactService {
             artJobMapper.updateById(job, false);
             //更新任务信息表
             artifact.setLock(0);
-            artifact.setCurrentJobId(job.getId());
+
             artifact.setFinalStatus(job.getStatus());
             artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
@@ -123,7 +126,7 @@ public class ArtifactService {
         }
     }
 
-    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy) throws IOException {
+    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long id) throws IOException {
         File file = new File(saveFilePath);
         File progressFile = new File(homeDir.getTmpAbsolutePath() + ".progress"); // 进度文件
         long existingFileSize = 0;
@@ -201,6 +204,7 @@ public class ArtifactService {
             byte[] buffer = new byte[1024];
             int bytesRead;
             long totalBytesRead = existingFileSize;
+            long time = System.currentTimeMillis();
 
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputFile.write(buffer, 0, bytesRead);
@@ -211,18 +215,27 @@ public class ArtifactService {
 
                 // 计算并显示下载进度
                 double progress = (double) totalBytesRead / fileSize * 100;
-                logger.info("下载进度: %.2f%% (%s/%s)%n",
-                        progress,
-                        formatFileSize(totalBytesRead),
-                        formatFileSize(fileSize));
+//                logger.info("下载进度: %.2f%% (%s/%s)%n",
+//                        progress,
+//                        formatFileSize(totalBytesRead),
+//                        formatFileSize(fileSize));
+                long now = System.currentTimeMillis();
+                if (now - time > 1000) {
+                    time = now;
+                    ArtJob artJob = new ArtJob();
+                    String progressStr = String.format("%.2f", progress);
+                    artJob.setProgress(progressStr +"%");
+                    artJob.setId(id);
+                    artJobMapper.updateById(artJob, false);
+                }
             }
 
-            System.out.println("文件下载完成: " + saveFilePath);
+            log.info("文件下载完成: " + saveFilePath);
 
             // 下载完成后删除进度文件
             if (progressFile.exists()) {
                 progressFile.delete();
-                System.out.println("进度文件已删除");
+                log.info("进度文件已删除");
             }
         } finally {
             connection.disconnect();

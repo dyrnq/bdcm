@@ -28,4 +28,7 @@ public class ArtJob {
 
     @Column("end_time")
     private Date endTime;
+
+    @Column("progress")
+    private String  progress;
 }
