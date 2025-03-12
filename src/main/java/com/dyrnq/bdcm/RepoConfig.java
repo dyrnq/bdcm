@@ -1,6 +1,7 @@
 package com.dyrnq.bdcm;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -24,24 +25,35 @@ import java.io.File;
 @Configuration
 public class RepoConfig {
     static Logger logger = LoggerFactory.getLogger(RepoConfig.class);
-    @Inject("${repo.type}")
-    String repoType;
-    @Inject("${repo.local.path}")
-    String repoLocalPath;
-    @Inject("${repo.local.listen}")
-    String repoLocalListen;
+    @Inject
+    RepoProps repoProps;
+
+    private RepoProps repoProps() {
+        return repoProps;
+    }
 
     @Init
     public void init() {
-        if (StrUtil.equalsIgnoreCase("local", repoType)) {
-            if (StrUtil.isNotBlank(repoLocalListen)) {
-                Thread tcpThread = getThread(repoLocalListen);
+        RepoProps repoProps = repoProps();
+        if (repoProps.getS3() != null) {
+            if (repoProps.getS3().getAccessKey() != null) {
+                repoProps.getS3().setAccessKey("******");
+            }
+            if (repoProps.getS3().getSecretKey() != null) {
+                repoProps.getS3().setSecretKey("******");
+            }
+        }
+        logger.info("***************repoType={}", JSONUtil.toJsonStr(repoProps));
+        if (StrUtil.equalsIgnoreCase("local", repoProps().getType())) {
+            if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
+                if (StrUtil.isNotBlank(repoProps().getLocal().getPath())) {
+                    File file = new File(repoProps().getLocal().getPath());
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                }
+                Thread tcpThread = getThread(repoProps().getLocal().getListen());
                 tcpThread.start();
-                logger.info("***************repoType={},repoLocalPath={},{}监听已开启, 监听端口 {}",
-                        repoType,
-                        repoLocalPath,
-                        tcpThread.getName(),
-                        repoLocalListen);
             }
         }
     }
@@ -73,7 +85,7 @@ public class RepoConfig {
 
         Thread tcpThread = new Thread(() -> {
             PathHandler path = new PathHandler();
-            ResourceHandler resourceHandler = new ResourceHandler(new FileResourceManager(new File(repoLocalPath), 100));
+            ResourceHandler resourceHandler = new ResourceHandler(new FileResourceManager(new File(repoProps().getLocal().getPath()), 100));
             resourceHandler.setDirectoryListingEnabled(true);
 
             path.addPrefixPath("/", resourceHandler);
