@@ -39,6 +39,6 @@ public class Artifact {
     private Integer autoJob;
 
     @Column("current_job_id")
-    private Integer currentJobId;
+    private Long currentJobId;
 
 }

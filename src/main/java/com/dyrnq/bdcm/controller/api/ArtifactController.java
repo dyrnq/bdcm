@@ -7,6 +7,7 @@ import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.Artifact;
+import com.dyrnq.bdcm.service.ArtifactService;
 import com.dyrnq.utils.IDUtils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.List;
 
 @Mapping("api/artifact")
 @Controller
@@ -28,6 +30,8 @@ public class ArtifactController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtifactController.class);
     @Inject
     ArtifactMapper artifactMapper;
+    @Inject
+    ArtifactService artifactService;
 
     @Mapping("")
     public PageResult query(Context ctx, int page, int limit) {
@@ -96,6 +100,15 @@ public class ArtifactController extends ApiController {
         }
     }
 
+    @Mapping("/download")
+    public String download(List<String> ids){
+        try {
+            return artifactService.download(ids);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return e.getMessage();
+        }
+    }
 
 }
 

@@ -15,10 +15,10 @@ public class ArtJob {
     private Long id;
 
     @Column("art_id")
-    private Integer artId;
+    private Long artId;
 
     @Column("user_id")
-    private Integer userId;
+    private String  userId;
 
     @Column("status")
     private Integer status;
