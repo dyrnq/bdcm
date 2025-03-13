@@ -50,6 +50,9 @@ public class ArtifactController extends ApiController {
                 if (StrUtil.isNotBlank(query.getArtUrl())) {
                     mapperWhereQ.and().beginLk("url", "%" + query.getArtUrl() + "%").end();
                 }
+                if (ObjectUtil.isNotEmpty(query.getArtId())) {
+                    mapperWhereQ.and().beginLk("id", "%" + query.getArtId() + "%").end();
+                }
             };
 
             int start = PageUtil.getStart(page - 1, limit);

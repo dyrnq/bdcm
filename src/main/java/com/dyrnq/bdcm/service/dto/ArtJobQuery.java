@@ -6,4 +6,5 @@ import lombok.Data;
 public class ArtJobQuery {
     String artName;
     String artUrl;
+    Long artId;
 }

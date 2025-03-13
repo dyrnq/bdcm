@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
@@ -38,6 +39,9 @@ public class ArtJobService {
         }
         if (StrUtil.isNotBlank(query.getArtUrl())) {
             whereQ.and().beginLk("b.url", "%" + query.getArtUrl() + "%").end();
+        }
+        if (ObjectUtil.isNotEmpty(query.getArtId())) {
+            whereQ.and().beginLk("b.id", "%" + query.getArtId() + "%").end();
         }
 
         IPage<ArtJobView> page = tableQuery.selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
