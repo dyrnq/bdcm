@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd -P)
 CODE_BASE="${SCRIPT_DIR}/.."
-ver="v2.9.23"
+ver="v2.9.24"
 curl -O -fSL -# https://gitee.com/layui/layui/releases/download/"${ver}"/layui-"${ver}".zip
 unzip -u -o layui-"${ver}".zip
 ls -l ./layui-${ver}/layui/
