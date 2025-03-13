@@ -32,7 +32,7 @@ function addLink(d) {
     console.log(typeof d.id)
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    return editBtn+'&nbsp;'+delBtn+'&nbsp;';
+    return delBtn+'&nbsp;';
 }
 
 

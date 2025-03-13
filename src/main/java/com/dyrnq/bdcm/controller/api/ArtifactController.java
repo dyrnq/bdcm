@@ -1,6 +1,7 @@
 package com.dyrnq.bdcm.controller.api;
 
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
 import cn.hutool.core.util.StrUtil;
@@ -120,12 +121,62 @@ public class ArtifactController extends ApiController {
     }
 
     @Mapping("/download")
-    public String download(List<Long> ids){
+    public Result download(Context ctx, long... id) {
         try {
-            return artifactService.download(ids);
+            List<Long> list = CollectionUtil.newArrayList();
+            for (long i : id) {
+                list.add(i);
+            }
+            artifactService.download(list);
+            return Result.succeed("ok");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return e.getMessage();
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @Mapping("/enable")
+    public Result enable(Context ctx, long... id) {
+        try {
+            List<Long> list = CollectionUtil.newArrayList();
+            for (long i : id) {
+                list.add(i);
+            }
+            artifactMapper.db().table("artifact").set("auto_job", 1).whereTrue().and().beginIn("id", list).end().update();
+            return Result.succeed("ok");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @Mapping("/disable")
+    public Result disable(Context ctx, long... id) {
+        try {
+            List<Long> list = CollectionUtil.newArrayList();
+            for (long i : id) {
+                list.add(i);
+            }
+            artifactMapper.db().table("artifact").set("auto_job", 0).whereTrue().and().beginIn("id", list).end().update();
+            return Result.succeed("ok");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @Mapping("/reset")
+    public Result reset(Context ctx, long... id) {
+        try {
+            List<Long> list = CollectionUtil.newArrayList();
+            for (long i : id) {
+                list.add(i);
+            }
+            artifactMapper.db().table("artifact").set("final_status", 0).whereTrue().and().beginIn("id", list).end().update();
+            return Result.succeed("ok");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
         }
     }
 

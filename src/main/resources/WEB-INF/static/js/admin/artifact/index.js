@@ -145,10 +145,10 @@ $('#addOver').click(function(){
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
             , {field: 'name', title: 'name', width: 200}
             , {field: 'url', title: 'url', width: 300, sort: true}
-            , {field: 'autoJob', title: 'autoJob' }
-            , {field: 'lock', title: '_lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>" }
+            , {field: 'autoJob', title: 'auto',width: 50, templet: "<div>{{d.autoJob === 1 ? 'yes' : ''}}</div>", }
+            , {field: 'lock', title: 'lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>", width: 50 }
+            , {field: 'finalStatus', title: 'final', width: 80, templet: "<div>{{d.finalStatus === 1 ? 'success' : ''}}</div>", }
             , {field: 'currentJobId', title: 'currentJobId' }
-            , {field: 'finalStatus', title: 'finalStatus' }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
 
 //            , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
@@ -253,7 +253,58 @@ $('#addOver').click(function(){
                     skin: 'layui-layer-win10'
                 });
                 break;
+            case 'more':
+                var that = this;
+                dropdown.render({
+                    elem: that,
+                    show: true,
+                    data: [
+                        {title: commonStr.del, id: 'del'},
+                        {title: "auto/enable", id: 'enable'},
+                        {title: "auto/disable", id: 'disable'},
+                        {title: "下载", id: 'download'},
+                        {title: "reset", id: 'reset'},
 
+                        ],
+                    click: function(data, othis){
+                        var dataX = table.checkStatus(obj.config.id).data;
+                        var url = ctx + '/api/artifact/'+ data.id;
+                        var confirmMsg = commonStr.confirm + ' ' + data.title +'?';
+                        var allId = [];
+                        if (dataX.length === 0) {
+                            layer.msg(commonStr.pleaseSelect);
+                        } else {
+                            layer.confirm(confirmMsg , function(index) {
+                                for (let i = 0; i < dataX.length; i++) {
+                                    const val = dataX[i];
+                                    allId.push(val.id);
+                                }
+                                $.ajax({
+                                    url: url,
+                                    type: 'post',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({id: allId}),
+                                    success:function (data,statusText) {
+                                    if(data.code=='200'){
+                                        table.reload('demo',{});
+                                        layer.msg(commonStr.success);
+                                    }else{
+                                        layer.msg(data.description);
+                                    }
+                                    },
+                                    'error':function () {
+                                        layer.msg(commonStr.errorInfo);
+                                    }
+                                });
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    align: 'right', // 右对齐弹出
+                    style: 'box-shadow: 1px 1px 10px rgb(0 0 0 / 12%);' //设置额外样式
+                })
+                dropdown.reload(that,{});
+              break;
 
         }
 
