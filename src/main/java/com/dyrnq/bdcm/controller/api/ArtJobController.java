@@ -6,6 +6,9 @@ import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.model.ArtJob;
+import com.dyrnq.bdcm.service.ArtJobService;
+import com.dyrnq.bdcm.service.dto.ArtJobQuery;
+import com.dyrnq.bdcm.service.dto.ArtJobView;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
@@ -23,12 +26,14 @@ public class ArtJobController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtJobController.class);
     @Inject
     ArtJobMapper artJobMapper;
+    @Inject
+    ArtJobService artJobService;
 
     @Mapping("")
-    public PageResult query(Context ctx, int page, int limit) {
+    public PageResult query(Context ctx, int page, int limit, ArtJobQuery query) {
         try {
             int start = PageUtil.getStart(page - 1, limit);
-            IPage<ArtJob> p = artJobMapper.selectPage(start, limit, null);
+            IPage<ArtJobView> p = artJobService.query(start, limit, query);
             return PageResult.succeed(p.getList(), p.getTotal());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

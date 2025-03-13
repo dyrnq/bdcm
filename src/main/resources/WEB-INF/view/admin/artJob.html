@@ -32,22 +32,63 @@ input[name='param']{
                 <legend>artJob</legend>
             </fieldset>
 
-            <form action="${ctx}/admin/http" id="searchForm" method="post">
+
+
+            <form class="layui-form" id="searchForm" method="post">
                 <div class="layui-form">
-                    <div class="layui-inline" style="display: none">
-                        <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="add">${i18n.get("add.inst")}</button>
-                    </div>
-                    <div class="layui-inline" style="display:none">
-                        <button type="button" class="layui-btn layui-btn-sm" id="guide">${i18n.get("commonStr.edit")}</button>
-                    </div>
-                    <div class="layui-inline" style="display:none">
-                        <button type="button" class="layui-btn layui-btn-sm">${i18n.get("commonStr.edit")}</button>
-                    </div>
-                    <div class="layui-inline" style="display:none">
-                        <button type="button" class="layui-btn layui-btn-sm layui-btn-normal">${i18n.get("commonStr.clear")}</button>
-                    </div>
+
+                    <div class="layui-col-md2"><div class="grid-demo">
+                        <div class="layui-input-group">
+                            <div class="layui-input-split layui-input-prefix">name</div>
+                            <input type="text" name="artName" class="layui-input">
+                        </div>
+                    </div></div>
+
+                    <div class="layui-col-md2"><div class="grid-demo">
+                        <div class="layui-input-group">
+                            <div class="layui-input-split layui-input-prefix">url</div>
+                            <input type="text" name="artUrl" class="layui-input">
+                        </div>
+                    </div></div>
+
+
+
+<!--                    <div class="layui-col-md2"><div class="grid-demo">-->
+<!--                        <div class="layui-input-group">-->
+<!--                            <div class="layui-input-split layui-input-prefix">uri</div>-->
+<!--                            <input type="text" name="uri" class="layui-input">-->
+<!--                        </div>-->
+<!--                    </div></div>-->
+
+<!--                    <div class="layui-col-md2"><div class="grid-demo">-->
+<!--                        <div class="layui-input-group">-->
+<!--                            <div class="layui-input-split layui-input-prefix">label</div>-->
+<!--                            <input type="text" name="label" class="layui-input">-->
+<!--                        </div>-->
+<!--                    </div></div>-->
+
+
+
+                    <div class="layui-col-md2"><div class="grid-demo">
+                        <div class="layui-btn-container layui-col-xs12">
+
+                            <button class="layui-btn layui-btn-sm" lay-submit lay-filter="demo-table-search">${i18n.get("commonStr.search")}</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-primary" type="reset" >${i18n.get("commonStr.clear")}</button>
+                        </div>
+                    </div></div>
+                    <div class="layui-col-md1"><div class="grid-demo">
+                        <div class="layui-inline">
+                            <a href="https://apisix.apache.org/zh/docs/apisix/admin-api/#route" class="layui-btn layui-btn-sm layui-bui-normal" target="_blank">${i18n.get("commonStr.help")}</a>
+                        </div>
+                    </div></div>
+
+
+
+
+
                 </div>
             </form>
+
 
             <table class="layui-hide" id="demo" lay-filter="test"></table>
 

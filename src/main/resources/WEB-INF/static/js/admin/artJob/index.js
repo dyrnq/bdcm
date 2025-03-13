@@ -63,6 +63,18 @@ form.on('switch(demo-checkbox-filter)', function(data){
     console.log('checked 状态: '+ elem.checked);
 });
 
+ form.on('submit(demo-table-search)', function(data){
+     var field = data.field; // 获得表单字段
+     // 执行搜索重载
+     table.reload('demo', {
+       page: {
+         curr: 1 // 重新从第 1 页开始
+       },
+       where: field // 搜索的字段
+     });
+     return false; // 阻止默认 form 跳转
+   });
+
 $('#add').click(function(){
     cleanData(false);
     layer.open({
@@ -131,8 +143,8 @@ $('#addOver').click(function(){
         , cols: [[ //表头
             {type: 'checkbox', fixed: 'left'}
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
-            , {field: 'name', title: 'name', width: 200}
-            , {field: 'url', title: 'url', width: 300, sort: true}
+            , {field: 'artName', title: 'name', width: 200}
+            , {field: 'artUrl', title: 'url', width: 300, sort: true}
             , {field: 'status', title: 'status' }
             , {field: 'progress', title: 'progress' }
             , {field: 'beginTime', title: 'beginTime', sort: true, width: 300, templet: "<div>{{!d.beginTime?'-':layui.util.toDateString(d.beginTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
