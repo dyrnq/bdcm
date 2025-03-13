@@ -17,4 +17,23 @@ public class RepoProps implements Serializable {
     private String type;
     private RepoLocal local = new RepoLocal();
     private RepoS3 s3 = new RepoS3();
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static
+    public class RepoS3 implements Serializable {
+        private String endpoint;
+        private String accessKey;
+        private String secretKey;
+        private String bucket;
+    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static
+    public class RepoLocal implements Serializable {
+        private String path;
+        private String listen;
+    }
 }
