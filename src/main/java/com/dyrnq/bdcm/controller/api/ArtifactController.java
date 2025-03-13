@@ -3,11 +3,13 @@ package com.dyrnq.bdcm.controller.api;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
+import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
+import com.dyrnq.bdcm.service.dto.ArtQuery;
 import com.dyrnq.utils.IDUtils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
@@ -17,6 +19,8 @@ import org.noear.solon.core.handle.Result;
 import org.noear.solon.validation.annotation.Numeric;
 import org.noear.solon.validation.annotation.Valid;
 import org.noear.wood.IPage;
+import org.noear.wood.MapperWhereQ;
+import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +38,22 @@ public class ArtifactController extends ApiController {
     ArtifactService artifactService;
 
     @Mapping("")
-    public PageResult query(Context ctx, int page, int limit) {
+    public PageResult query(Context ctx, int page, int limit, ArtQuery query) {
         try {
+
+            Act1<MapperWhereQ> condition = mapperWhereQ -> {
+                mapperWhereQ.whereTrue();
+
+                if (StrUtil.isNotBlank(query.getArtName())) {
+                    mapperWhereQ.and().beginLk("name", "%" + query.getArtName() + "%").end();
+                }
+                if (StrUtil.isNotBlank(query.getArtUrl())) {
+                    mapperWhereQ.and().beginLk("url", "%" + query.getArtUrl() + "%").end();
+                }
+            };
+
             int start = PageUtil.getStart(page - 1, limit);
-            IPage<Artifact> p = artifactMapper.selectPage(start, limit, null);
+            IPage<Artifact> p = artifactMapper.selectPage(start, limit, condition);
             return PageResult.succeed(p.getList(), p.getTotal());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
