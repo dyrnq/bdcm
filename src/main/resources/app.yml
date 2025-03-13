@@ -24,10 +24,25 @@ repo:
     path: local_repo
     listen: 0.0.0.0:9980
   s3:
-    endpoint: http://192.168.66.122:1900
+    endpoint: http://192.168.66.122:19000
     bucket: my-bucket
     accessKey: vUR3oLMF5ds8gWCP
     secretKey: odWFIZukYrw9dY0G5ezDKMZWbhU0S4oD
+
+grab:
+  http-proxy:
+    enable: ${HTTP_PROXY_ENABLE:true}
+    host: ${HTTP_PROXY_HOST:}
+    port: ${HTTP_PROXY_PORT:}
+    exclude: ${HTTP_PROXY_EXCLUDE:127.0.0.1,mirrors.ustc.edu.cn,localhost,192.168.66.0/24}
+  https-proxy:
+    enable: ${HTTPS_PROXY_ENABLE:${grab.httpProxy.enable:}}
+    host: ${HTTPS_PROXY_HOST:${grab.httpProxy.host:}}
+    port: ${HTTPS_PROXY_PORT:${grab.httpProxy.port:}}
+    exclude: ${HTTPS_PROXY_EXCLUDE:${grab.httpProxy.exclude:}}
+
+
+
 
 solon:
 #  debug: 1
