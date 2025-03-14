@@ -2,6 +2,7 @@ package com.dyrnq.bdcm.controller;
 
 
 import com.dyrnq.bdcm.CfgExtractor;
+import com.dyrnq.bdcm.RepoConfig;
 import org.noear.solon.Utils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
@@ -21,11 +22,13 @@ public class AdminController extends BaseController {
 
     @Inject
     CfgExtractor cfgExtractor;
-
+    @Inject
+    RepoConfig repoConfig;
 
     @Mapping("artifact")
     public Object artifact() {
         ModelAndView model = new ModelAndView("admin/artifact.html");
+        model.put("externalUrl", repoConfig.guessExternalUrl());
         return model;
     }
     @Mapping("artJob")
@@ -34,17 +37,6 @@ public class AdminController extends BaseController {
         return model;
     }
 
-    @Mapping("manifest")
-    public Object manifest() {
-        ModelAndView model = new ModelAndView("admin/manifest.html");
-        return model;
-    }
-
-    @Mapping("deploy")
-    public Object deploy(Context ctx) {
-        ModelAndView model = new ModelAndView("admin/deploy.html");
-        return model;
-    }
 
     @Mapping("user")
     public Object user() {
@@ -64,47 +56,7 @@ public class AdminController extends BaseController {
         return model;
     }
 
-    @Mapping("plugin")
-    public Object plugin() {
-        ModelAndView model = new ModelAndView("admin/plugin.html");
-        return model;
-    }
 
-    @Mapping("streamRoute")
-    public Object streamRoute() {
-        ModelAndView model = new ModelAndView("admin/streamRoute.html");
-        return model;
-    }
-
-    @Mapping("upstream")
-    public Object upstream() {
-        ModelAndView model = new ModelAndView("admin/upstream.html");
-        return model;
-    }
-
-    @Mapping("service")
-    public Object service() {
-        ModelAndView model = new ModelAndView("admin/service.html");
-        return model;
-    }
-
-    @Mapping("secret")
-    public Object secret() {
-        ModelAndView model = new ModelAndView("admin/secret.html");
-        return model;
-    }
-
-    @Mapping("ssl")
-    public Object ssl() {
-        ModelAndView model = new ModelAndView("admin/ssl.html");
-        return model;
-    }
-
-    @Mapping("consumer")
-    public Object consumer() {
-        ModelAndView model = new ModelAndView("admin/consumer.html");
-        return model;
-    }
 
     @Mapping("login")
     public Object login() {
@@ -112,37 +64,7 @@ public class AdminController extends BaseController {
         return model;
     }
 
-    @Mapping("globalRule")
-    public Object globalRule() {
-        ModelAndView model = new ModelAndView("admin/globalRule.html");
-        return model;
-    }
 
-    @Mapping("pluginConfig")
-    public Object pluginConfig() {
-        ModelAndView model = new ModelAndView("admin/pluginConfig.html");
-        return model;
-    }
-
-    @Mapping("consumerGroup")
-    public Object consumerGroup() {
-        ModelAndView model = new ModelAndView("admin/consumerGroup.html");
-        return model;
-    }
-
-    @Mapping("editor")
-    public Object editor(Context ctx, String cls, String id) {
-        ModelAndView model = new ModelAndView("admin/editor.html");
-        model.put("id", id);
-        model.put("cls", cls);
-        return model;
-    }
-
-    @Mapping("proto")
-    public Object proto() {
-        ModelAndView model = new ModelAndView("admin/proto.html");
-        return model;
-    }
 
 
     @Mapping("")
@@ -159,10 +81,5 @@ public class AdminController extends BaseController {
 
     }
 
-    @Mapping("ca")
-    public Object ca(Context ctx) {
-        ModelAndView model = new ModelAndView("admin/ca.html");
-        return model;
-    }
 
 }

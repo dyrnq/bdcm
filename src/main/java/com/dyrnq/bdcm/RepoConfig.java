@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -33,6 +34,24 @@ public class RepoConfig {
         return repoProps;
     }
 
+    public String guessExternalUrl() {
+        String type = repoProps().getType();
+        String externalUrl = repoProps().getExternalUrl();
+        RepoProps.RepoS3 s3 = repoProps().getS3();
+        RepoProps.RepoLocal local = repoProps().getLocal();
+        if (StrUtil.isNotEmpty(externalUrl)) {
+            return externalUrl;
+        } else {
+            if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, type)) {
+                return StrUtil.replace(local.getListen(), "0.0.0.0", "127.0.0.1");
+            } else {
+
+                return StrUtil.join("/", s3.getEndpoint(), s3.getBucket(), "");
+
+            }
+        }
+    }
+
     private void info() {
         RepoProps repo = ObjectUtil.cloneByStream(repoProps());
         if (repo.getS3() != null) {
@@ -50,13 +69,11 @@ public class RepoConfig {
     @Init
     public void init() {
         info();
-        if (StrUtil.equalsIgnoreCase("local", repoProps().getType())) {
+        if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, repoProps().getType())) {
             if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
                 if (StrUtil.isNotBlank(repoProps().getLocal().getPath())) {
                     File file = new File(repoProps().getLocal().getPath());
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
+                    FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
                 }
                 Thread tcpThread = getThread(repoProps().getLocal().getListen());
                 tcpThread.start();

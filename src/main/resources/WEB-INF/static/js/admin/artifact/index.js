@@ -30,9 +30,13 @@ function addLink(d) {
     var addLink = d.id;
     console.log(d)
     console.log(typeof d.id)
+    console.log(externalUrl)
+    var link = d.url.split('://')[1];
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    return editBtn+'&nbsp;'+delBtn+'&nbsp;';
+    let url  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+externalUrl+''+link+'" target="_blank">link</a>'
+
+    return editBtn+'&nbsp;'+delBtn+'&nbsp;'+url;
 }
 
 

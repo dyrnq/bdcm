@@ -19,6 +19,7 @@ jwt:
   expire: 864000000 # token超时时间，单位为毫秒
 
 repo:
+  external-url: ${REPO_EXTERNAL_URL:}
   type: local
   local:
     path: local_repo

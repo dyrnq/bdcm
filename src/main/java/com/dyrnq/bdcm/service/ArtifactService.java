@@ -3,6 +3,7 @@ package com.dyrnq.bdcm.service;
 import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
 import com.dyrnq.bdcm.RepoProps;
+import com.dyrnq.bdcm.RepoType;
 import com.dyrnq.bdcm.dso.ArtJobLogMapper;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
@@ -119,7 +120,7 @@ public class ArtifactService {
             String rawUrl = fileURL.split("//")[1];
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
-            if (repoProps.getType().equals("local")) {
+            if (repoProps.getType().equals(RepoType.LOCAL)) {
                 saveFilePath = repoProps().getLocal().getPath() + "/" + rawUrl;
             } else {
                 saveFilePath = homeDir.getTmpAbsolutePath() + "/" + rawUrl;
@@ -256,7 +257,7 @@ public class ArtifactService {
                     }
                 }
 
-                if (repoProps.getType().equals("s3")) {
+                if (repoProps.getType().equals(RepoType.S3)) {
                     // 上传到S3
                     uploadObjectS3(saveFilePath, fileURL.split("//")[1]);
                 }

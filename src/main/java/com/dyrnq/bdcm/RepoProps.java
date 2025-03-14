@@ -15,6 +15,7 @@ import java.io.Serializable;
 @BindProps(prefix="repo")
 public class RepoProps implements Serializable {
     private String type;
+    private String externalUrl;
     private RepoLocal local = new RepoLocal();
     private RepoS3 s3 = new RepoS3();
 
