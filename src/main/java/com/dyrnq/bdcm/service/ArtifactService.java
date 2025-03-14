@@ -1,6 +1,5 @@
 package com.dyrnq.bdcm.service;
 
-import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
 import com.dyrnq.bdcm.RepoProps;
@@ -14,7 +13,8 @@ import com.dyrnq.utils.IDUtils;
 import com.dyrnq.utils.ThreadPoolUtils;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.errors.MinioException;
+import io.minio.UploadObjectArgs;
+import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -78,23 +78,13 @@ public class ArtifactService {
     }
 
     public String download(Long id) {
-        if (StrUtil.equalsIgnoreCase("local", repoProps.getType())) {
-            return download_local(id);
-        } else if (StrUtil.equalsIgnoreCase("s3", repoProps.getType())) {
-            Artifact artifact = this.artifactMapper.selectById(id);
-            download_s3(artifact.getUrl());
-            return "";
-        } else {
-            throw new RuntimeException("Not support!");
-        }
+        return download(id, null);
     }
 
-    public String download_local(Long id) {
-        return download_local(id, null);
-    }
+
 
     // 单文件下载
-    public String download_local(Long id, Long artJobId) {
+    public String download(Long id, Long artJobId) {
         // 根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
         // 查看任务锁状态，如果是下载中，驳回下载请求
@@ -146,7 +136,7 @@ public class ArtifactService {
                 error(jobId, e);
 //                job.setEndTime(new Date());
 //                job.setStatus(2);
-                download_local(id, jobId);
+                download(id, jobId);
             }
 
             // 补足下载结果与完成时间。
@@ -265,7 +255,14 @@ public class ArtifactService {
 
                     }
                 }
+
+                if (repoProps.getType().equals("s3")) {
+                    // 上传到S3
+                    uploadObjectS3(saveFilePath, fileURL.split("//")[1]);
+                }
+
                 info(jobId, "jobId={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", jobId, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
+
             }
         } finally {
             try {
@@ -399,10 +396,27 @@ public class ArtifactService {
         }
     }
 
+    private void uploadObjectS3(String localFilePath, String object) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        String accessKey = repoProps.getS3().getAccessKey();
+        String secretKey = repoProps.getS3().getSecretKey();
+        String bucket = repoProps.getS3().getBucket();
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint(repoProps.getS3().getEndpoint())
+                .credentials(accessKey, secretKey)
+                .build();
+        minioClient.uploadObject(
+                UploadObjectArgs.builder()
+                        .bucket(bucket)
+                        .object(object)
+                        .filename(localFilePath)
+                        .build());
+    }
+
     /**
      * MinIO 上传
+     * @deprecated
      */
-    public void download_s3(String fileUrl) {
+    private void download_s3(String fileUrl) {
         String accessKey = repoProps.getS3().getAccessKey();
         String secretKey = repoProps.getS3().getSecretKey();
         String bucket = repoProps.getS3().getBucket();
