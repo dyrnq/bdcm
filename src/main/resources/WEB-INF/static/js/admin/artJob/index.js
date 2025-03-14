@@ -145,8 +145,8 @@ $('#addOver').click(function(){
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
             , {field: 'artName', title: 'name', width: 200}
             , {field: 'artUrl', title: 'url', width: 300, sort: true}
-            , {field: 'status', title: 'status' }
-            , {field: 'progress', title: 'progress' }
+            , {field: 'status', title: 'status', width: 80 }
+            , {field: 'progress', title: 'progress',width: 100 }
             , {field: 'beginTime', title: 'beginTime', sort: true, width: 300, templet: "<div>{{!d.beginTime?'-':layui.util.toDateString(d.beginTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'endTime', title: 'endTime', sort: true, width: 300, templet: "<div>{{!d.endTime?'-':layui.util.toDateString(d.endTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
