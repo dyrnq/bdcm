@@ -60,7 +60,9 @@ form.on('switch(demo-checkbox-filter)', function(data){
     }else{
         $(elem).val("0");
     }
-    console.log('checked 状态: '+ elem.checked);
+//    console.log('#########autoJob checked 状态: '+ elem.checked);
+//    console.log('#########autoJob 值: '+ $(elem).val());
+    layui.form.render('checkbox');
 });
 
  form.on('submit(demo-table-search)', function(data){
@@ -93,18 +95,27 @@ $('#add').click(function(){
 
 $('#addOver').click(function(){
     let u = $('#addForm1 input[name="u"]').val();
-    var formData = $('#addForm1').serialize();
-    //console.log(formData);
-    //判断有没有勾选autoJob，此处比较罗嗦，有更好的方法欢迎留言
-    var paramName = 'autoJob'; // 要判断的参数名
-    var paramValue = '0'; // 要增加的参数值
-    if (formData.indexOf(paramName + '=') === -1) {
-      formData += '&' + paramName + '=' + paramValue;
-    }
+    var formData = $('#addForm1').serializeArray();
+    var fieldName = 'autoJob'; // 要判断的参数名
+    $.each(formData, function() {
+      if (this.name === fieldName) {
+        //console.log('包含字段：' + fieldName);
+        if ( $('#addForm1 input[name="autoJob"]').prop('checked') === false){
+            this.value = '0';
+        }else{
+            this.value = '1';
+        }
+      }
+    });
+    var serializedData = formData.reduce(function(acc, curr) {
+      return acc + (acc ? '&' : '') + curr.name + '=' + curr.value;
+    }, '');
+
+//    console.log(serializedData);
     $.ajax({
         type : 'POST',
         url: ctx + '/api/artifact/'+u,
-        data : formData,
+        data : serializedData,
         dataType : 'json',
         success : function(data) {
             if(data.code=='200'){
