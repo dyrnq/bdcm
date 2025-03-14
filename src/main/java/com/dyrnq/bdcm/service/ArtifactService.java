@@ -100,10 +100,7 @@ public class ArtifactService {
         // 查看任务锁状态，如果是下载中，驳回下载请求
         if (artJobId != null || (artifact.getLock() == null || artifact.getLock() == 0)) {
             // 通过URL执行下载任务。
-            log.info("id={}, 开始执行文件 {} 的下载任务...", id, artifact.getUrl());
-
             Long jobId = null;
-
 
             ArtJob job = null;
             if (artJobId == null) {
@@ -121,7 +118,7 @@ public class ArtifactService {
                 jobId = artJobId;
                 job.setId(jobId);
             }
-
+            info(jobId,"jobId={}, 开始执行文件 {} 的下载任务...", jobId, artifact.getUrl());
             // 加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
@@ -178,10 +175,10 @@ public class ArtifactService {
 //                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
 //            }
             if (remoteFileSize == file.length()) {
-                info(jobId, "该文件已存在且完整，无需重新下载,id={}, saveFilePath={}", jobId, saveFilePath);
+                info(jobId, "该文件已存在且完整，无需重新下载,jobId={}, saveFilePath={}", jobId, saveFilePath);
                 return; // 文件已存在且完整，直接返回
             } else {
-                info(jobId, "文件已存在但不完整，继续下载,id={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", jobId, saveFilePath, remoteFileSize, existingFileSize);
+                info(jobId, "文件已存在但不完整，继续下载,jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", jobId, saveFilePath, remoteFileSize, existingFileSize);
             }
         }
 
