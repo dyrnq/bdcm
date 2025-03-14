@@ -43,7 +43,7 @@ public class RepoConfig {
             return externalUrl;
         } else {
             if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, type)) {
-                return StrUtil.replace(local.getListen(), "0.0.0.0", "127.0.0.1");
+                return "http://"+StrUtil.replace(local.getListen(), "0.0.0.0", "127.0.0.1")+"/";
             } else {
 
                 return StrUtil.join("/", s3.getEndpoint(), s3.getBucket(), "");
