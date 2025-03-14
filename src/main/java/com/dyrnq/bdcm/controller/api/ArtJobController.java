@@ -4,20 +4,27 @@ package com.dyrnq.bdcm.controller.api;
 import cn.hutool.core.util.PageUtil;
 import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
+import com.dyrnq.bdcm.dso.ArtJobLogMapper;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.model.ArtJob;
+import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.service.ArtJobService;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
+import org.noear.solon.annotation.Path;
 import org.noear.solon.core.handle.Context;
 import org.noear.solon.core.handle.Result;
 import org.noear.solon.validation.annotation.Valid;
 import org.noear.wood.IPage;
+import org.noear.wood.MapperWhereQ;
+import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 @Mapping("api/artJob")
 @Controller
@@ -26,6 +33,8 @@ public class ArtJobController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtJobController.class);
     @Inject
     ArtJobMapper artJobMapper;
+    @Inject
+    ArtJobLogMapper artJobLogMapper;
     @Inject
     ArtJobService artJobService;
 
@@ -65,7 +74,19 @@ public class ArtJobController extends ApiController {
             return Result.failure(e.getMessage());
         }
     }
-
+    @Mapping("log/{id}")
+    public Result log(Context ctx, @Path("id")  long id) {
+        try {
+            Act1<MapperWhereQ> condition = mapperWhereQ -> {
+                mapperWhereQ.whereEq("art_job_id", id);
+            };
+            List<ArtJobLog> list = artJobLogMapper.selectList(condition);
+            return Result.succeed(list);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
 
 }
 

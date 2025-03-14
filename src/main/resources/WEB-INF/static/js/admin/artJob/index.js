@@ -32,7 +32,8 @@ function addLink(d) {
     console.log(typeof d.id)
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    return delBtn+'&nbsp;';
+    let logBtn  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+ctx+'/api/artJob/log/'+d.id+'" target="_blank">log</a>'
+    return delBtn+'&nbsp;'+logBtn;
 }
 
 

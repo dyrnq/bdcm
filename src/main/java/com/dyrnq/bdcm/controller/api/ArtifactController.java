@@ -172,7 +172,10 @@ public class ArtifactController extends ApiController {
             for (long i : id) {
                 list.add(i);
             }
-            artifactMapper.db().table("artifact").set("final_status", 0).set("_lock", 0).whereTrue().and().beginIn("id", list).end().update();
+            artifactMapper.db().table("artifact").usingNull(true)
+                    .set("current_job_id", null)
+                    .set("final_status", null)
+                    .set("_lock", null).whereTrue().and().beginIn("id", list).end().update();
             return Result.succeed("ok");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
