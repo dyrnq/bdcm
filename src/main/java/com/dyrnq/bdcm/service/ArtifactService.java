@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
 import com.dyrnq.bdcm.RepoProps;
+import com.dyrnq.bdcm.dso.ArtJobLogMapper;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.ArtJob;
@@ -47,6 +48,9 @@ public class ArtifactService {
     @Db
     ArtJobMapper artJobMapper;
 
+    @Db
+    ArtJobLogMapper artJobLogMapper;
+
     @Inject
     RepoProps repoProps;
 
@@ -83,29 +87,43 @@ public class ArtifactService {
         }
     }
 
-    // 单文件下载
     public String download_local(Long id) {
+        return download_local(id, null);
+    }
+    // 单文件下载
+    public String download_local(Long id, Long artJobId) {
         // 根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
         // 查看任务锁状态，如果是下载中，驳回下载请求
-        if (artifact.getLock() == null || artifact.getLock() == 0) {
+        if (artJobId != null || (artifact.getLock() == null || artifact.getLock() == 0)) {
             // 通过URL执行下载任务。
-            log.info("开始执行文件 {} 的下载任务...", artifact.getName());
+            log.info("id={}, 开始执行文件 {} 的下载任务...", id, artifact.getUrl());
 
-            Long jobId = IDUtils.getLongID();
+            Long jobId = null;
+
+
+            ArtJob job = null;
+            if (artJobId == null) {
+                // 提交部分下载记录
+                jobId = IDUtils.getLongID();
+                job = new ArtJob();
+                job.setId(jobId);
+                job.setStatus(0);
+                job.setBeginTime(new Date());
+                job.setArtId(artifact.getId());
+                job.setUserId("1");
+                artJobMapper.insert(job, false);
+            } else {
+                job = new ArtJob();
+                jobId = artJobId;
+                job.setId(jobId);
+            }
+
             // 加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
             artifact.setCurrentJobId(jobId);
             artifactMapper.updateById(artifact, false);
-            // 提交部分下载记录
-            ArtJob job = new ArtJob();
-            job.setId(jobId);
-            job.setStatus(0);
-            job.setBeginTime(new Date());
-            job.setArtId(artifact.getId());
-            job.setUserId("1");
-            artJobMapper.insert(job, false);
 
             String fileURL = artifact.getUrl();
             String rawUrl = fileURL.split("//")[1];
@@ -125,10 +143,12 @@ public class ArtifactService {
                 job.setStatus(1);
                 job.setProgress("100%");
             } catch (Exception e) {
-                log.error(e.getMessage());
-                job.setEndTime(new Date());
-                job.setStatus(2);
+                logger.error(e.getMessage(),e);
+//                job.setEndTime(new Date());
+//                job.setStatus(2);
+                download_local(id, jobId);
             }
+
             // 补足下载结果与完成时间。
             artJobMapper.updateById(job, false);
             // 更新任务信息表
@@ -137,7 +157,7 @@ public class ArtifactService {
             artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
         } else {
-            log.info("该任务下载功能暂被占用，请稍候。");
+            log.info("该任务下载功能暂被占用，请稍候。id={}, url={}", id, artifact.getUrl());
             return "该任务下载功能暂被占用，请稍候。";
         }
     }
@@ -149,28 +169,28 @@ public class ArtifactService {
 
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
         if (file.exists()) {
-            long remoteFileSize = getRemoteFileSize(fileURL, null); // 先尝试不使用代理
-            if (remoteFileSize == -1) {
-                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
-            }
+            existingFileSize = file.length();
+            long remoteFileSize = getRemoteFileSize(fileURL, proxy); // 先尝试不使用代理
+//            if (remoteFileSize == -1) {
+//                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
+//            }
             if (remoteFileSize == file.length()) {
-                logger.info("该文件已存在且完整，无需重新下载");
+                logger.info("该文件已存在且完整，无需重新下载,id={}, saveFilePath={}", id, saveFilePath);
                 return; // 文件已存在且完整，直接返回
             } else {
-                logger.info("文件已存在但不完整，继续下载");
-                existingFileSize = file.length();
+                logger.info("文件已存在但不完整，继续下载,id={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", id, saveFilePath, remoteFileSize, existingFileSize);
             }
         }
 
         // 如果进度文件存在，读取已下载的字节数
-        if (progressFile.exists()) {
-            try (FileInputStream fis = new FileInputStream(progressFile)) {
-                byte[] bytes = new byte[Long.BYTES];
-                fis.read(bytes);
-                existingFileSize = bytesToLong(bytes);
-                logger.info("检测到未完成的下载，继续从 " + formatFileSize(existingFileSize) + " 开始下载");
-            }
-        }
+//        if (progressFile.exists()) {
+//            try (FileInputStream fis = new FileInputStream(progressFile)) {
+//                byte[] bytes = new byte[Long.BYTES];
+//                fis.read(bytes);
+//                existingFileSize = bytesToLong(bytes);
+//                logger.info("文件已存在但不完整，继续下载, id={}, saveFilePath={}, 从{}开始下载", id, saveFilePath, formatFileSize(existingFileSize));
+//            }
+//        }
 
         // 检查并创建父目录
         File parentDir = file.getParentFile();
@@ -205,7 +225,7 @@ public class ArtifactService {
 
             // 获取文件总大小
             long fileSize = existingFileSize + response.body().contentLength();
-            logger.info("文件总大小: " + formatFileSize(fileSize));
+            logger.info("id={}, 文件总大小={}, url={}", id, formatFileSize(fileSize), fileURL);
 
             try (InputStream inputStream = response.body().byteStream();
                  RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
@@ -236,21 +256,31 @@ public class ArtifactService {
                         artJobMapper.updateById(artJob, false);
                     }
                 }
-
-                log.info("文件下载完成: " + saveFilePath);
-
+                boolean deleted = false;
                 // 下载完成后删除进度文件
                 if (progressFile.exists()) {
-                    if (progressFile.delete()) {
-                        log.info("进度文件已删除");
-                    } else {
-                        log.error("进度文件删除失败");
+                    try {
+                        deleted = progressFile.delete();
+                    } catch (Exception ignored) {
+
                     }
                 }
+                logger.info("id={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", id, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
             }
         } finally {
-            if (response != null) {
-                response.close(); // 手动关闭 Response
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            } catch (Exception ignored) {
+            }
+            try {
+                if (response != null) {
+                    if (response.body() != null) {
+                        response.body().close();
+                    }
+                }
+            } catch (Exception ignored) {
             }
         }
     }
@@ -260,6 +290,8 @@ public class ArtifactService {
      */
     private OkHttpClient createOkHttpClient(Proxy proxy) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .followRedirects(true)
+                .followSslRedirects(true)
                 .connectTimeout(30, TimeUnit.MINUTES) // 连接超时
                 .readTimeout(30, TimeUnit.MINUTES); // 读取超时
 
@@ -289,12 +321,34 @@ public class ArtifactService {
                 .url(fileURL)
                 .head() // 使用 HEAD 请求获取文件大小
                 .build();
-
-        try (Response response = client.newCall(request).execute()) {
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
             if (response.isSuccessful()) {
-                return response.body().contentLength();
+
+                String contentLength = response.header("Content-Length");
+                if (contentLength != null) {
+                    return Long.parseLong(contentLength);
+                } else {
+                    return -1;
+                }
             } else {
                 throw new IOException("请求失败: " + response.code() + " " + response.message());
+            }
+        } finally {
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            } catch (Exception ignored) {
+            }
+            try {
+                if (response != null) {
+                    if (response.body() != null) {
+                        response.body().close();
+                    }
+                }
+            } catch (Exception ignored) {
             }
         }
     }
@@ -380,6 +434,7 @@ public class ArtifactService {
                 log.info(repoProps.getS3().getEndpoint() + "/" + bucket + "/" + fileUrl.split("//")[1] + "上传成功");
             }
         } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
