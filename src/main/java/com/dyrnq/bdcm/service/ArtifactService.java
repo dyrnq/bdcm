@@ -1,13 +1,22 @@
 package com.dyrnq.bdcm.service;
 
+import cn.hutool.core.util.StrUtil;
+import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
+import com.dyrnq.bdcm.RepoProps;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.ArtJob;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
 import com.dyrnq.utils.ThreadPoolUtils;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
@@ -15,108 +24,115 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class ArtifactService {
 
     static Logger logger = LoggerFactory.getLogger(ArtifactService.class);
+
     @Inject
     HomeDir homeDir;
-    @Db
 
+    @Db
     ArtifactMapper artifactMapper;
 
     @Db
-
     ArtJobMapper artJobMapper;
 
-    @Inject("${repo.local.path}")
+    @Inject
+    RepoProps repoProps;
 
-    String folder;
+    @Inject
+    GrabProps grabProps;
 
-    //下载接口
+    private RepoProps repoProps() {
+        return repoProps;
+    }
+
+    // 下载接口
     public String download(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             log.info("未传入任何ID");
             return "未传入任何ID";
         }
-        //检查yaml路径下是否有预留文件夹.没有则创建
-        String folderName = folder;
-        Path path = Paths.get(folderName);
-        if (!Files.exists(path)) {
-            try {
-                // 如果不存在，创建文件夹
-                Files.createDirectories(path);
-                log.info("文件夹创建成功: {}", path);
-            } catch (Exception e) {
-                log.error("创建文件夹时出错: {}", e.getMessage());
-            }
-        } else {
-            log.info("文件夹已存在:{}", path);
-        }
-        //循环调用线程池进行下载任务。
+        // 检查yaml路径下是否有预留文件夹.没有则创建
+        // 循环调用线程池进行下载任务。
         for (Long id : ids) {
-            ThreadPoolUtils.execute(() -> {
-                download(id);
-            });
+            ThreadPoolUtils.execute(() -> download(id));
         }
-
         return "下载任务已提交";
     }
 
-    //单文件下载
     public String download(Long id) {
-        //根据id获取URL
+        if (StrUtil.equalsIgnoreCase("local", repoProps.getType())) {
+            return download_local(id);
+        } else if (StrUtil.equalsIgnoreCase("s3", repoProps.getType())) {
+            Artifact artifact = this.artifactMapper.selectById(id);
+            download_s3(artifact.getUrl());
+            return "";
+        } else {
+            throw new RuntimeException("Not support!");
+        }
+    }
+
+    // 单文件下载
+    public String download_local(Long id) {
+        // 根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
-        //查看任务锁状态，如果是下载中，驳回下载请求
+        // 查看任务锁状态，如果是下载中，驳回下载请求
         if (artifact.getLock() == null || artifact.getLock() == 0) {
-            //通过URL执行下载任务。
+            // 通过URL执行下载任务。
             log.info("开始执行文件 {} 的下载任务...", artifact.getName());
 
             Long jobId = IDUtils.getLongID();
-            //加锁
+            // 加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
             artifact.setCurrentJobId(jobId);
             artifactMapper.updateById(artifact, false);
-            //提交部分下载记录
+            // 提交部分下载记录
             ArtJob job = new ArtJob();
-
             job.setId(jobId);
             job.setStatus(0);
             job.setBeginTime(new Date());
             job.setArtId(artifact.getId());
             job.setUserId("1");
             artJobMapper.insert(job, false);
+
             String fileURL = artifact.getUrl();
             String rawUrl = fileURL.split("//")[1];
-            String saveFilePath = folder + "/" + rawUrl;
+            String saveFilePath;
+            // 根据存储模式选择文件的存储路径
+            if (repoProps.getType().equals("local")) {
+                saveFilePath = repoProps().getLocal().getPath() + "/" + rawUrl;
+            } else {
+                saveFilePath = homeDir.getTmpAbsolutePath() + "/" + rawUrl;
+            }
             // 设置代理
-            Proxy proxy = null;
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
 
             try {
                 downloadFileWithResume(fileURL, saveFilePath, proxy, jobId);
                 job.setEndTime(new Date());
                 job.setStatus(1);
-            } catch (IOException e) {
+                job.setProgress("100%");
+            } catch (Exception e) {
                 log.error(e.getMessage());
                 job.setEndTime(new Date());
                 job.setStatus(2);
             }
-            //补足下载结果与完成时间。
+            // 补足下载结果与完成时间。
             artJobMapper.updateById(job, false);
-            //更新任务信息表
+            // 更新任务信息表
             artifact.setLock(0);
-
             artifact.setFinalStatus(job.getStatus());
             artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
@@ -126,7 +142,7 @@ public class ArtifactService {
         }
     }
 
-    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long id) throws IOException {
+    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long id) throws Exception {
         File file = new File(saveFilePath);
         File progressFile = new File(homeDir.getTmpAbsolutePath() + ".progress"); // 进度文件
         long existingFileSize = 0;
@@ -158,122 +174,129 @@ public class ArtifactService {
 
         // 检查并创建父目录
         File parentDir = file.getParentFile();
+
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
 
-        // 测试连接，决定是否使用代理
-        HttpURLConnection connection = null;
-        boolean useProxy = false;
 
-        // 先尝试不使用代理
+        // 创建 OkHttpClient
+        OkHttpClient client = createOkHttpClient(proxy);
+
+        // 创建请求
+        Request request = createRequest(fileURL, existingFileSize);
+
+        // 发送请求并获取响应
+        Response response = null;
         try {
-            connection = createConnection(fileURL, null, existingFileSize);
-            connection.setConnectTimeout(5000); // 设置连接超时时间为 5 秒
-            connection.setReadTimeout(5000); // 设置读取超时时间为 5 秒
-            connection.connect();
-            logger.info("直接连接成功，无需使用代理");
-        } catch (IOException e) {
-            logger.info("直接连接失败，尝试使用代理...");
-            useProxy = true;
-        }
+            response = client.newCall(request).execute();
 
-        // 如果直接连接失败，使用代理
+            // 处理 416 错误
+            if (response.code() == 416) {
+                logger.info("服务器返回 416 错误，从头开始下载");
+                existingFileSize = 0;
+                request = createRequest(fileURL, existingFileSize); // 重新创建请求
+                response = client.newCall(request).execute(); // 重新发送请求
+            }
 
-        connection = createConnection(fileURL, proxy, existingFileSize);
+            if (!response.isSuccessful()) {
+                throw new IOException("请求失败: " + response.code() + " " + response.message());
+            }
 
+            // 获取文件总大小
+            long fileSize = existingFileSize + response.body().contentLength();
+            logger.info("文件总大小: " + formatFileSize(fileSize));
 
-        // 获取文件总大小
-        long fileSize = connection.getContentLengthLong() + existingFileSize;
-        logger.info("文件总大小: " + formatFileSize(fileSize));
+            try (InputStream inputStream = response.body().byteStream();
+                 RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
 
-        // 检查服务器是否支持断点续传
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_PARTIAL) {
-            logger.info("服务器不支持断点续传，从头开始下载");
-            existingFileSize = 0;
-            connection.disconnect();
-            connection = createConnection(fileURL, useProxy ? proxy : null, existingFileSize);
-            fileSize = connection.getContentLengthLong(); // 重新获取文件大小
-        }
+                outputFile.seek(existingFileSize);
 
-        try (InputStream inputStream = connection.getInputStream();
-             RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                long totalBytesRead = existingFileSize;
+                long time = System.currentTimeMillis();
 
-            outputFile.seek(existingFileSize);
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputFile.write(buffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
 
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            long totalBytesRead = existingFileSize;
-            long time = System.currentTimeMillis();
+                    // 更新进度文件
+                    updateProgressFile(progressFile, totalBytesRead);
 
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputFile.write(buffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
+                    // 计算并显示下载进度
+                    double progress = (double) totalBytesRead / fileSize * 100;
+                    long now = System.currentTimeMillis();
+                    if (now - time > 1000) {
+                        time = now;
+                        ArtJob artJob = new ArtJob();
+                        String progressStr = String.format("%.2f", progress);
+                        artJob.setProgress(progressStr + "%");
+                        artJob.setId(id);
+                        artJobMapper.updateById(artJob, false);
+                    }
+                }
 
-                // 更新进度文件
-                updateProgressFile(progressFile, totalBytesRead);
+                log.info("文件下载完成: " + saveFilePath);
 
-                // 计算并显示下载进度
-                double progress = (double) totalBytesRead / fileSize * 100;
-//                logger.info("下载进度: %.2f%% (%s/%s)%n",
-//                        progress,
-//                        formatFileSize(totalBytesRead),
-//                        formatFileSize(fileSize));
-                long now = System.currentTimeMillis();
-                if (now - time > 1000) {
-                    time = now;
-                    ArtJob artJob = new ArtJob();
-                    String progressStr = String.format("%.2f", progress);
-                    artJob.setProgress(progressStr +"%");
-                    artJob.setId(id);
-                    artJobMapper.updateById(artJob, false);
+                // 下载完成后删除进度文件
+                if (progressFile.exists()) {
+                    if (progressFile.delete()) {
+                        log.info("进度文件已删除");
+                    } else {
+                        log.error("进度文件删除失败");
+                    }
                 }
             }
-
-            log.info("文件下载完成: " + saveFilePath);
-
-            // 下载完成后删除进度文件
-            if (progressFile.exists()) {
-                progressFile.delete();
-                log.info("进度文件已删除");
-            }
         } finally {
-            connection.disconnect();
+            if (response != null) {
+                response.close(); // 手动关闭 Response
+            }
         }
     }
 
     /**
-     * 创建 HttpURLConnection 连接
+     * 创建 OkHttpClient
      */
-    private HttpURLConnection createConnection(String fileURL, Proxy proxy, long existingFileSize) throws IOException {
-        URL url = new URL(fileURL);
-        HttpURLConnection connection;
+    private OkHttpClient createOkHttpClient(Proxy proxy) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.MINUTES) // 连接超时
+                .readTimeout(30, TimeUnit.MINUTES); // 读取超时
+
         if (proxy != null) {
-            connection = (HttpURLConnection) url.openConnection(proxy);
-        } else {
-            connection = (HttpURLConnection) url.openConnection();
+            builder.proxy(proxy); // 设置代理
         }
-        connection.setRequestProperty("Range", "bytes=" + existingFileSize + "-");
-        return connection;
+
+        return builder.build();
+    }
+
+    /**
+     * 创建请求
+     */
+    private Request createRequest(String fileURL, long existingFileSize) {
+        return new Request.Builder()
+                .url(fileURL)
+                .addHeader("Range", "bytes=" + existingFileSize + "-") // 设置 Range 请求头
+                .build();
     }
 
     /**
      * 获取远程文件的大小
      */
     private long getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
-        URL url = new URL(fileURL);
-        HttpURLConnection connection;
-        if (proxy != null) {
-            connection = (HttpURLConnection) url.openConnection(proxy);
-        } else {
-            connection = (HttpURLConnection) url.openConnection();
+        OkHttpClient client = createOkHttpClient(proxy);
+        Request request = new Request.Builder()
+                .url(fileURL)
+                .head() // 使用 HEAD 请求获取文件大小
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return response.body().contentLength();
+            } else {
+                throw new IOException("请求失败: " + response.code() + " " + response.message());
+            }
         }
-        connection.setRequestMethod("HEAD"); // 使用 HEAD 请求获取文件大小
-        connection.setConnectTimeout(5000); // 设置连接超时时间为 5 秒
-        connection.setReadTimeout(5000); // 设置读取超时时间为 5 秒
-        long fileSize = connection.getContentLengthLong();
-        connection.disconnect();
-        return fileSize;
     }
 
     /**
@@ -322,4 +345,42 @@ public class ArtifactService {
         }
     }
 
+    /**
+     * MinIO 上传
+     */
+    public void download_s3(String fileUrl) {
+        String accessKey = repoProps.getS3().getAccessKey();
+        String secretKey = repoProps.getS3().getSecretKey();
+        String bucket = repoProps.getS3().getBucket();
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
+
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint(repoProps.getS3().getEndpoint())
+                .credentials(accessKey, secretKey)
+                .build();
+
+        OkHttpClient client = createOkHttpClient(proxy);
+        Request request = new Request.Builder()
+                .url(fileUrl)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("请求失败: " + response.code() + " " + response.message());
+            }
+
+            long fileSize = response.body().contentLength();
+            try (InputStream inputStream = response.body().byteStream()) {
+                minioClient.putObject(
+                        PutObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(fileUrl.split("//")[1])
+                                .stream(inputStream, fileSize, 10485760) // 分块大小为 10MB
+                                .build());
+                log.info(repoProps.getS3().getEndpoint() + "/" + bucket + "/" + fileUrl.split("//")[1] + "上传成功");
+            }
+        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
