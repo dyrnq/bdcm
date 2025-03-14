@@ -49,8 +49,8 @@ public class Config {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-        logger.info("config***********homeAbsolutePath=" + homeAbsolutePath);
-        logger.info("config***********tmpAbsolutePath=" + tmpAbsolutePath);
+        logger.info("config***********homeAbsolutePath={}", homeAbsolutePath);
+        logger.info("config***********tmpAbsolutePath={}", tmpAbsolutePath);
 
 
         return new HomeDir(homeAbsolutePath, tmpAbsolutePath, null, null, null);
@@ -59,7 +59,7 @@ public class Config {
     @Bean(value = "cfgExtractor", typed = true)
     public CfgExtractor getCfgExtractor() {
         String tokenCookieName = StringUtils.isNotBlank(jwtName) ? jwtName : CookieName.NAME_TOKEN;
-        logger.info("config***********tokenCookieName=" + tokenCookieName);
+        logger.info("config***********tokenCookieName={}", tokenCookieName);
         return new CfgExtractor(tokenCookieName);
     }
 

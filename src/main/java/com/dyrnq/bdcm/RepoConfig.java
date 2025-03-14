@@ -44,7 +44,7 @@ public class RepoConfig {
             }
         }
         logger.info("***************repoType={}", JSONUtil.toJsonStr(repo));
-//        logger.info("***************repoType={}", JSONUtil.toJsonStr(repoProps()));
+        logger.debug("***************repoType={}", JSONUtil.toJsonStr(repoProps()));
     }
 
     @Init
