@@ -8,6 +8,7 @@ import com.dyrnq.bdcm.dso.ArtJobLogMapper;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.ArtJob;
+import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
 import com.dyrnq.utils.ThreadPoolUtils;
@@ -23,6 +24,7 @@ import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -90,6 +92,7 @@ public class ArtifactService {
     public String download_local(Long id) {
         return download_local(id, null);
     }
+
     // 单文件下载
     public String download_local(Long id, Long artJobId) {
         // 根据id获取URL
@@ -143,7 +146,7 @@ public class ArtifactService {
                 job.setStatus(1);
                 job.setProgress("100%");
             } catch (Exception e) {
-                logger.error(e.getMessage(),e);
+                error(jobId, e);
 //                job.setEndTime(new Date());
 //                job.setStatus(2);
                 download_local(id, jobId);
@@ -162,7 +165,7 @@ public class ArtifactService {
         }
     }
 
-    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long id) throws Exception {
+    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long jobId) throws Exception {
         File file = new File(saveFilePath);
         File progressFile = new File(homeDir.getTmpAbsolutePath() + ".progress"); // 进度文件
         long existingFileSize = 0;
@@ -175,10 +178,10 @@ public class ArtifactService {
 //                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
 //            }
             if (remoteFileSize == file.length()) {
-                logger.info("该文件已存在且完整，无需重新下载,id={}, saveFilePath={}", id, saveFilePath);
+                info(jobId, "该文件已存在且完整，无需重新下载,id={}, saveFilePath={}", jobId, saveFilePath);
                 return; // 文件已存在且完整，直接返回
             } else {
-                logger.info("文件已存在但不完整，继续下载,id={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", id, saveFilePath, remoteFileSize, existingFileSize);
+                info(jobId, "文件已存在但不完整，继续下载,id={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", jobId, saveFilePath, remoteFileSize, existingFileSize);
             }
         }
 
@@ -213,7 +216,7 @@ public class ArtifactService {
 
             // 处理 416 错误
             if (response.code() == 416) {
-                logger.info("服务器返回 416 错误，从头开始下载");
+                info(jobId, "服务器返回 416 错误，从头开始下载");
                 existingFileSize = 0;
                 request = createRequest(fileURL, existingFileSize); // 重新创建请求
                 response = client.newCall(request).execute(); // 重新发送请求
@@ -225,7 +228,7 @@ public class ArtifactService {
 
             // 获取文件总大小
             long fileSize = existingFileSize + response.body().contentLength();
-            logger.info("id={}, 文件总大小={}, url={}", id, formatFileSize(fileSize), fileURL);
+            info(jobId, "jobId={}, 文件总大小={}, url={}", jobId, formatFileSize(fileSize), fileURL);
 
             try (InputStream inputStream = response.body().byteStream();
                  RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
@@ -252,7 +255,7 @@ public class ArtifactService {
                         ArtJob artJob = new ArtJob();
                         String progressStr = String.format("%.2f", progress);
                         artJob.setProgress(progressStr + "%");
-                        artJob.setId(id);
+                        artJob.setId(jobId);
                         artJobMapper.updateById(artJob, false);
                     }
                 }
@@ -265,7 +268,7 @@ public class ArtifactService {
 
                     }
                 }
-                logger.info("id={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", id, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
+                info(jobId, "jobId={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", jobId, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
             }
         } finally {
             try {
@@ -437,5 +440,27 @@ public class ArtifactService {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 下载log记录
+     */
+
+    private void error(Long jobId, Exception e) {
+        ArtJobLog artJobLog = new ArtJobLog();
+        artJobLog.setId(IDUtils.getLongID());
+        artJobLog.setLog(e.getMessage());
+        artJobLog.setArtJobId(jobId);
+        logger.error(e.getMessage(), e);
+        artJobLogMapper.insert(artJobLog, false);
+    }
+
+    private void info(Long jobId, String s, Object... objects) {
+        ArtJobLog artJobLog = new ArtJobLog();
+        artJobLog.setId(IDUtils.getLongID());
+        artJobLog.setLog(MessageFormatter.arrayFormat(s, objects).getMessage());
+        artJobLog.setArtJobId(jobId);
+        logger.info(s, objects);
+        artJobLogMapper.insert(artJobLog, false);
     }
 }
