@@ -7,4 +7,5 @@ public class ArtQuery {
     String artName;
     String artUrl;
     Long artId;
+    Integer artAutoJob;
 }

@@ -54,6 +54,20 @@ if ('' == default_limt || null == default_limt || undefined == default_limt) {
     default_limt = cfg.pageLimit;
 }
 
+layui.code({
+    elem: '.code-demo',
+    wordWrap: false,
+    layout: ['code'],
+    ln: false,
+    lang: 'yaml',
+    preview: false,
+    header: true,
+    text: {
+      code: '多行文本,每行一条数据,格式为: <b>name,url,autoJob</b>,如果只有一列则为<b>url<b/>', // 默认:  </>
+      preview: '预览栏标题' // 默认: Preview
+    }
+});
+
 form.on('switch(demo-checkbox-filter)', function(data){
     var elem = data.elem; // 获得 checkbox 原始 DOM 对象
     var checked = elem.checked; // 获得 checkbox 选中状态
@@ -138,6 +152,28 @@ $('#addOver').click(function(){
 
 
 
+$('#addOver3').click(function(){
+
+    var formData = $('#addForm3').serialize();
+    $.ajax({
+        type : 'POST',
+        url: ctx + '/api/artifact/batchAdd',
+        data : formData,
+        dataType : 'json',
+        success : function(data) {
+            if(data.code=='200'){
+                layer.closeAll();
+                layer.msg(commonStr.success);
+                table.reload('demo',{});
+            } else {
+                layer.msg(data.description);
+            }
+        },
+        error : function() {
+            layer.alert(commonStr.errorInfo);
+        }
+    });
+});
 
     //执行一个 table 实例
     table.render({
@@ -261,6 +297,20 @@ $('#addOver').click(function(){
                     area: ['800px', '600px'],
                     title: 'Add',
                     content : $('#windowDiv'),
+                    anim: 'slideRight',
+                    shade: 0.6, // 遮罩透明度
+                    shadeClose: true, // 点击遮罩区域，关闭弹层
+                    maxmin: true, // 允许全屏最小化
+                    skin: 'layui-layer-win10'
+                });
+                break;
+            case 'batchAdd':
+                cleanData(false);
+                layer.open({
+                    type: 1,
+                    area: ['800px', '600px'],
+                    title: 'Add',
+                    content : $('#guideDiv'),
                     anim: 'slideRight',
                     shade: 0.6, // 遮罩透明度
                     shadeClose: true, // 点击遮罩区域，关闭弹层

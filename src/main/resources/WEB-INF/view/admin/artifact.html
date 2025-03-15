@@ -58,12 +58,16 @@ input[name='param']{
 
 
 
-                    <!--                    <div class="layui-col-md2"><div class="grid-demo">-->
-                    <!--                        <div class="layui-input-group">-->
-                    <!--                            <div class="layui-input-split layui-input-prefix">uri</div>-->
-                    <!--                            <input type="text" name="uri" class="layui-input">-->
-                    <!--                        </div>-->
-                    <!--                    </div></div>-->
+                    <div class="layui-col-md2"><div class="grid-demo">
+                        <div class="layui-input-group">
+                            <div class="layui-input-split layui-input-prefix">auto</div>
+                            <select name="artAutoJob">
+                                <option value=""></option>
+                                <option value="1">是</option>
+                                <option value="0">否</option>
+                            </select>
+                        </div>
+                    </div></div>
 
                     <!--                    <div class="layui-col-md2"><div class="grid-demo">-->
                     <!--                        <div class="layui-input-group">-->
@@ -164,31 +168,27 @@ input[name='param']{
     <div class="layui-form" id="guideDiv" style="padding: 15px; display: none;">
         <form id="addForm3">
 
-            <div class="layui-form-item" style="display:none">
-                <label class="layui-form-label">id</label>
+            <div class="layui-form-item">
+                <label class="layui-form-label">data</label>
                 <div class="layui-input-block">
-                    <input type="text" name="id" class="layui-input">
+                    <textarea name="data" placeholder="多行文本框" class="layui-textarea"></textarea>
                 </div>
             </div>
 
 
-            <div class="layui-form-item" style="margin-top:20px;margin-bottom:20px">
-                <label class="layui-form-label">tar file</label>
-                <!--                <div class="layui-input-block">-->
-                <!--                    <button type="button" class="layui-btn layui-btn-normal" id="upload-cert">cert file</button>-->
-                <!--                </div>-->
-                <div class="layui-input-inline short">
-                    <button type="button" class="layui-btn layui-btn-normal" id="upload-cert">file</button>
-                </div>
-                <div class="layui-form-mid layui-word-aux"><span class="layui-inline layui-upload-choose" id="layui-upload-choose-cert"></span></div>
-
+            <div class="layui-form-item">
+                <label class="layui-form-label">说明</label>
+            <div class="layui-input-block">
+<!--                多行文本,每行一条数据,格式为: <b>name,url,autoJob</b><br/>-->
+                <pre class="layui-code code-demo" lay-options="{}">
+zookeeper,https://archive.apache.org/dist/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz,yes
+rocketmq,https://archive.apache.org/dist/rocketmq/4.9.8/rocketmq-all-4.9.8-bin-release.zip,yes</pre>
+            </div>
             </div>
 
 
             <div class="layui-form-item center">
-                <button type="button" class="layui-btn layui-btn-normal" id="ID-upload-demo-action">${i18n.get("commonStr.submit")}
-                    <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop" id="loading" style="display: none"></i>
-                </button>
+                <button type="button" class="layui-btn layui-btn-normal" id="addOver3">${i18n.get("commonStr.submit")}</button>
                 <button type="button" class="layui-btn" onclick="layer.closeAll()">${i18n.get("commonStr.close")}</button>
             </div>
 
@@ -210,7 +210,7 @@ input[name='param']{
         <button class="layui-btn layui-btn-sm" lay-event="more">${i18n.get("commonStr.batch")}<i class="layui-icon layui-icon-down layui-font-12"></i></button>
         <button class="layui-btn layui-btn-sm" lay-event="deleteSelected" style="display: none"><i class="layui-icon  layui-icon-delete"></i></button>
         <button class="layui-btn layui-btn-sm" lay-event="getCheckData" style="display: none">获取选中行数据</button>
-        <button class="layui-btn layui-btn-sm" lay-event="statusAll1" style="display: none">${i18n.get("commonStr.batchEnable")}</button>
+        <button class="layui-btn layui-btn-sm" lay-event="batchAdd">批量新增</button>
         <button class="layui-btn layui-btn-sm" lay-event="statusAll0" style="display: none">${i18n.get("commonStr.batchDisable")}</button>
     </div>
 </script>

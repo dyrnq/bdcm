@@ -4,6 +4,7 @@ package com.dyrnq.bdcm.controller.api;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
@@ -12,6 +13,8 @@ import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
 import com.dyrnq.bdcm.service.dto.ArtQuery;
 import com.dyrnq.utils.IDUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
@@ -45,6 +48,7 @@ public class ArtifactController extends ApiController {
             Act1<MapperWhereQ> condition = mapperWhereQ -> {
                 mapperWhereQ.whereTrue();
 
+
                 if (StrUtil.isNotBlank(query.getArtName())) {
                     mapperWhereQ.and().beginLk("name", "%" + query.getArtName() + "%").end();
                 }
@@ -54,6 +58,14 @@ public class ArtifactController extends ApiController {
                 if (ObjectUtil.isNotEmpty(query.getArtId())) {
                     mapperWhereQ.and().beginLk("id", "%" + query.getArtId() + "%").end();
                 }
+                if (ObjectUtil.isNotEmpty(query.getArtAutoJob())) {
+                    if (1 == query.getArtAutoJob()) {
+                        mapperWhereQ.and().beginEq("auto_job", query.getArtAutoJob()).end();
+                    } else {
+                        mapperWhereQ.and().begin("auto_job is null or auto_job !=1").end();
+                    }
+                }
+
             };
 
             int start = PageUtil.getStart(page - 1, limit);
@@ -70,7 +82,7 @@ public class ArtifactController extends ApiController {
     public Result add(Context ctx, Artifact artifact) {
         try {
             Long id =IDUtils.getLongID();
-            logger.info("id={}",id);
+//            logger.info("id={}",id);
             if(ObjectUtil.isNull(artifact.getId())){
                 artifact.setId(id);
             }
@@ -183,5 +195,40 @@ public class ArtifactController extends ApiController {
         }
     }
 
+    @Mapping("/batchAdd")
+    public Result batchAdd(Context ctx, String data) {
+        try {
+            List<String> list = IOUtils.readLines(data);
+
+            for (String str : list) {
+                String[] k = StringUtils.split(str, ",");
+                Artifact artifact = new Artifact();
+                if (k.length > 2) {
+                    artifact.setId(IDUtils.getLongID());
+                    artifact.setName(k[0]);
+                    artifact.setUrl(k[1]);
+                    if (ReUtil.isMatch("^(1|yes|ok)$", k[2])) {
+                        artifact.setAutoJob(1);
+                    }
+                } else if (k.length == 2) {
+                    artifact.setId(IDUtils.getLongID());
+                    artifact.setName(k[0]);
+                    artifact.setUrl(k[1]);
+                    artifact.setAutoJob(1);
+                } else if (k.length == 1) {
+                    artifact.setId(IDUtils.getLongID());
+                    artifact.setUrl(k[0]);
+                    artifact.setAutoJob(1);
+                }
+
+                artifactMapper.insert(artifact, true);
+            }
+
+            return Result.succeed("ok");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
 }
 
