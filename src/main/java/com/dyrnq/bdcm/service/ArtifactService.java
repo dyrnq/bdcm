@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
 import com.dyrnq.bdcm.RepoProps;
@@ -121,9 +122,9 @@ public class ArtifactService {
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
             if (repoProps.getType().equals(RepoType.LOCAL)) {
-                saveFilePath = repoProps().getLocal().getPath() + "/" + rawUrl;
+                saveFilePath = StringUtils.join(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
             } else {
-                saveFilePath = homeDir.getTmpAbsolutePath() + "/" + rawUrl;
+                saveFilePath = StringUtils.join(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
             }
             // 设置代理
             Proxy proxy = null;
@@ -188,7 +189,12 @@ public class ArtifactService {
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
         if (file.exists()) {
             existingFileSize = file.length();
-            long remoteFileSize = getRemoteFileSize(fileURL, proxy); // 先尝试不使用代理
+            long remoteFileSize = -1;
+            try {
+                remoteFileSize = getRemoteFileSize(fileURL, proxy);
+            } catch (Exception ignore) {
+
+            }
 //            if (remoteFileSize == -1) {
 //                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
 //            }
@@ -217,7 +223,11 @@ public class ArtifactService {
             parentDir.mkdirs();
         }
 
-
+        if (proxy != null) {
+            info(jobId, "使用代理下载, proxy={}", proxy);
+        } else {
+            info(jobId, "不使用代理下载");
+        }
         // 创建 OkHttpClient
         OkHttpClient client = createOkHttpClient(proxy);
 
