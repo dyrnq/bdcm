@@ -37,7 +37,7 @@ CREATE TABLE `art_job_log` (
   `id` BIGINT NOT NULL ,
   `art_job_id` BIGINT NOT NULL,
   `log` CLOB DEFAULT NULL ,
-   PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`)
 );
 
 INSERT INTO `user` VALUES ('1', 'admin','hello@admin.com','13988888888', '$2a$12$nXPoohJkpNbD1oSxtN0P1uGxhYP40Rn1Z0Yh1yxQ2lMhdz2TOqIZu');
