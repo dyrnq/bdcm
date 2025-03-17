@@ -83,7 +83,6 @@ public class ArtifactService {
     }
 
 
-
     // 单文件下载
     public String download(Long id, Long artJobId) {
         // 根据id获取URL
@@ -109,7 +108,7 @@ public class ArtifactService {
                 jobId = artJobId;
                 job.setId(jobId);
             }
-            info(jobId,"jobId={}, 开始执行文件 {} 的下载任务...", jobId, artifact.getUrl());
+            info(jobId, "jobId={}, 开始执行文件 {} 的下载任务...", jobId, artifact.getUrl());
             // 加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
@@ -304,10 +303,17 @@ public class ArtifactService {
      * 创建请求
      */
     private Request createRequest(String fileURL, long existingFileSize) {
-        return new Request.Builder()
-                .url(fileURL)
-                .addHeader("Range", "bytes=" + existingFileSize + "-") // 设置 Range 请求头
-                .build();
+
+        List<GrabProps.KeyVal> httpHeaders = grabProps.getHttpHeaders();
+
+        Request.Builder requestBuilder = new Request.Builder().url(fileURL);
+        requestBuilder.addHeader("Range", "bytes=" + existingFileSize + "-");
+        if (httpHeaders != null && httpHeaders.size() > 0) {
+            for (GrabProps.KeyVal header : httpHeaders) {
+                requestBuilder.addHeader(header.getName(), header.getValue());
+            }
+        }
+        return requestBuilder.build();
     }
 
     /**
@@ -415,6 +421,7 @@ public class ArtifactService {
 
     /**
      * MinIO 上传
+     *
      * @deprecated
      */
     private void download_s3(String fileUrl) {

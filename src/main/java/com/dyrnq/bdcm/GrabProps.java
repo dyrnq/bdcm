@@ -6,14 +6,26 @@ import lombok.NoArgsConstructor;
 import org.noear.solon.annotation.BindProps;
 import org.noear.solon.annotation.Configuration;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Configuration
-@BindProps(prefix="grab")
+@BindProps(prefix = "grab")
 public class GrabProps {
     private HostAndPort httpProxy = new HostAndPort();
     private HostAndPort httpsProxy = new HostAndPort();
+    private List<KeyVal> httpHeaders;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static
+    public class KeyVal {
+        String name;
+        String value;
+    }
 
     @Data
     @AllArgsConstructor
