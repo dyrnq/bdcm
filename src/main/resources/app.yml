@@ -26,10 +26,10 @@ repo:
     path:
     listen: 0.0.0.0:9980
   s3:
-    endpoint: http://192.168.66.122:19000
-    bucket: my-bucket
-    accessKey: vUR3oLMF5ds8gWCP
-    secretKey: odWFIZukYrw9dY0G5ezDKMZWbhU0S4oD
+    endpoint:
+    bucket:
+    accessKey:
+    secretKey:
 
 grab:
   http-headers:
