@@ -122,9 +122,9 @@ public class ArtifactService {
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
             if (repoProps.getType().equals(RepoType.LOCAL)) {
-                saveFilePath = StringUtils.join(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
+                saveFilePath = StringUtils.joinWith(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
             } else {
-                saveFilePath = StringUtils.join(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
+                saveFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
             }
             // 设置代理
             Proxy proxy = null;
