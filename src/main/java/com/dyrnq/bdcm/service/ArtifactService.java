@@ -180,7 +180,9 @@ public class ArtifactService {
 
     public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long jobId) throws Exception {
         File file = new File(saveFilePath);
-        File progressFile = new File(homeDir.getTmpAbsolutePath() + ".progress"); // 进度文件
+        String rawUrl = fileURL.split("//")[1];
+        String progressFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StringUtils.replace(rawUrl, "/", "__") + ".progress"); // 进度文件
+        File progressFile = new File(progressFilePath); // 进度文件
         long existingFileSize = 0;
 
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
