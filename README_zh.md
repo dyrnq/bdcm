@@ -22,11 +22,11 @@ see [scripts/test-docker.sh](scripts/test-docker.sh)
 
 | 变量名                        | 含义                            | 默认值                   |
 |----------------------------|-------------------------------|-----------------------|
-| HTTP_PROXY_ENABLE          | http proxy switch             | true                  |
+| HTTP_PROXY_ENABLE          | http proxy switch             | false                 |
 | HTTP_PROXY_HOST            | http proxy host               |                       |
 | HTTP_PROXY_PORT            | http proxy port               |                       |
 | HTTP_PROXY_EXCLUDE         | http proxy exclude            |                       |
-| HTTPS_PROXY_ENABLE         | https proxy switch            | true                  |
+| HTTPS_PROXY_ENABLE         | https proxy switch            | false                 |
 | HTTPS_PROXY_HOST           | https proxy host              |                       |
 | HTTPS_PROXY_PORT           | https proxy port              |                       |
 | HTTPS_PROXY_EXCLUDE        | https proxy exclude           |                       |
