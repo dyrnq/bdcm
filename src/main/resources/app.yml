@@ -39,7 +39,7 @@ grab:
     - name: Connection
       value: keep-alive
   http-proxy:
-    enable: ${HTTP_PROXY_ENABLE:true}
+    enable: ${HTTP_PROXY_ENABLE:false}
     host: ${HTTP_PROXY_HOST:}
     port: ${HTTP_PROXY_PORT:}
     exclude: ${HTTP_PROXY_EXCLUDE:127.0.0.1,mirrors.ustc.edu.cn,localhost,192.168.66.0/24}
