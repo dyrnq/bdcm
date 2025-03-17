@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
@@ -29,6 +30,7 @@ import org.slf4j.helpers.MessageFormatter;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -124,7 +126,32 @@ public class ArtifactService {
                 saveFilePath = homeDir.getTmpAbsolutePath() + "/" + rawUrl;
             }
             // 设置代理
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
+            Proxy proxy = null;
+
+            if (grabProps.getHttpProxy().isEnable()) {
+                if (grabProps.getHttpProxy().getPort() == 0) {
+                    logger.warn("port is 0, skip proxy");
+                } else {
+                    proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
+                }
+                String[] excludeHosts = StringUtils.splitByWholeSeparator(grabProps.getHttpProxy().getExclude(), ",");
+                for (String excludeHost : excludeHosts) {
+                    String host = "";
+                    try {
+                        URL url = new URL(fileURL);
+                        host = url.getHost();
+                        if (host.contains(excludeHost)) {
+                            proxy = null;
+                            break;
+                        }
+                    } catch (Exception e) {
+                        proxy = null;
+                        break;
+                    }
+
+                }
+
+            }
 
             try {
                 downloadFileWithResume(fileURL, saveFilePath, proxy, jobId);
