@@ -3,6 +3,7 @@ package com.dyrnq.bdcm;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import cn.hutool.system.SystemUtil;
 import com.dyrnq.bdcm.model.User;
 import com.dyrnq.bdcm.service.BusinessLogic;
 import com.dyrnq.utils.JwtUtils;
@@ -36,6 +37,17 @@ public class WebApp {
 
     public static void main(String[] args) {
         Solon.start(WebApp.class, args, app -> {
+            Set<String> allNodes = Solon.cfg().stringPropertyNames();
+            for (String entry : allNodes) {
+                String envName = StringUtils.upperCase(entry);
+                envName = StringUtils.replace(envName, "-", "_");
+                envName = StringUtils.replace(envName, ".", "_");
+                String getValue = SystemUtil.get(envName, true);
+                if (getValue != null) {
+                    Solon.cfg().setProperty(entry, getValue);
+                }
+            }
+
             //LogUtil.globalSet(new LogUtilToSlf4j());
             //app.onError(e -> logger.error(e.getMessage(), e));
             app.context().getBeanAsync(FreemarkerRender.class, e -> {
