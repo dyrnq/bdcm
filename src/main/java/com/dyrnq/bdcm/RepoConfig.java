@@ -42,7 +42,11 @@ public class RepoConfig {
         RepoProps.RepoS3 s3 = repoProps().getS3();
         RepoProps.RepoLocal local = repoProps().getLocal();
         if (StrUtil.isNotEmpty(externalUrl)) {
-            return externalUrl;
+            if (StrUtil.endWith(externalUrl, "/")) {
+                return externalUrl;
+            } else {
+                return externalUrl + "/";
+            }
         } else {
             if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, type)) {
                 return "http://"+StrUtil.replace(local.getListen(), "0.0.0.0", "127.0.0.1")+"/";
