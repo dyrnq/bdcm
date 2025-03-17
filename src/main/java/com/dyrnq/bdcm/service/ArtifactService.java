@@ -13,7 +13,6 @@ import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
 import com.dyrnq.utils.ThreadPoolUtils;
 import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
@@ -419,47 +418,7 @@ public class ArtifactService {
                         .build());
     }
 
-    /**
-     * MinIO 上传
-     *
-     * @deprecated
-     */
-    private void download_s3(String fileUrl) {
-        String accessKey = repoProps.getS3().getAccessKey();
-        String secretKey = repoProps.getS3().getSecretKey();
-        String bucket = repoProps.getS3().getBucket();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
 
-        MinioClient minioClient = MinioClient.builder()
-                .endpoint(repoProps.getS3().getEndpoint())
-                .credentials(accessKey, secretKey)
-                .build();
-
-        OkHttpClient client = createOkHttpClient(proxy);
-        Request request = new Request.Builder()
-                .url(fileUrl)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("请求失败: " + response.code() + " " + response.message());
-            }
-
-            long fileSize = response.body().contentLength();
-            try (InputStream inputStream = response.body().byteStream()) {
-                minioClient.putObject(
-                        PutObjectArgs.builder()
-                                .bucket(bucket)
-                                .object(fileUrl.split("//")[1])
-                                .stream(inputStream, fileSize, 10485760) // 分块大小为 10MB
-                                .build());
-                log.info(repoProps.getS3().getEndpoint() + "/" + bucket + "/" + fileUrl.split("//")[1] + "上传成功");
-            }
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 下载log记录
