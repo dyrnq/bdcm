@@ -19,10 +19,11 @@ jwt:
   expire: 864000000 # token超时时间，单位为毫秒
 
 repo:
-  external-url: ${REPO_EXTERNAL_URL:}
+  external-url:
   type: local
   local:
-    path: local_repo
+    # 默认为$HOME/bdcm/local_repo
+    path:
     listen: 0.0.0.0:9980
   s3:
     endpoint: http://192.168.66.122:19000

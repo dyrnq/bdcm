@@ -29,6 +29,8 @@ public class RepoConfig {
     static Logger logger = LoggerFactory.getLogger(RepoConfig.class);
     @Inject
     RepoProps repoProps;
+    @Inject
+    HomeDir homeDir;
 
     private RepoProps repoProps() {
         return repoProps;
@@ -71,10 +73,11 @@ public class RepoConfig {
         info();
         if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, repoProps().getType())) {
             if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
-                if (StrUtil.isNotBlank(repoProps().getLocal().getPath())) {
-                    File file = new File(repoProps().getLocal().getPath());
-                    FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
+                String defaultRepoLocalPath = StringUtils.joinWith(File.separator, homeDir.getHomeAbsolutePath(), "local_repo");
+                if (StrUtil.isBlank(repoProps().getLocal().getPath())) {
+                    repoProps().getLocal().setPath(defaultRepoLocalPath);
                 }
+                FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
                 Thread tcpThread = getThread(repoProps().getLocal().getListen());
                 tcpThread.start();
             }

@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm;
 
+import cn.hutool.json.JSONUtil;
 import com.dyrnq.utils.PathUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,17 +44,16 @@ public class Config {
     HomeDir getHomeDir() {
         String homeAbsolutePath = PathUtils.homeAbsolutePath(home, projectName);
         String tmpAbsolutePath = StringUtils.joinWith(File.separator, homeAbsolutePath, "tmp");
-
+        HomeDir homeDir = new HomeDir();
+        homeDir.setHomeAbsolutePath(homeAbsolutePath);
+        homeDir.setTmpAbsolutePath(tmpAbsolutePath);
         try {
             FileUtils.forceMkdir(new File(tmpAbsolutePath));
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-        logger.info("config***********homeAbsolutePath={}", homeAbsolutePath);
-        logger.info("config***********tmpAbsolutePath={}", tmpAbsolutePath);
-
-
-        return new HomeDir(homeAbsolutePath, tmpAbsolutePath, null, null, null);
+        logger.info("config***********homeDir={}", JSONUtil.toJsonStr(homeDir));
+        return homeDir;
     }
 
     @Bean(value = "cfgExtractor", typed = true)
