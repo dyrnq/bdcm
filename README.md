@@ -44,6 +44,15 @@ Supports environment variables
 | SPRING_DATASOURCE_URL      | Database URL                                  |                         |
 | SPRING_DATASOURCE_USERNAME | Database username                             |                         |
 | SPRING_DATASOURCE_PASSWORD | Database password                             |                         |
+| JWT_SECRET                 | jwt secret                                    |                         |
+
+> Important:
+
+Change the default jwt secret key with the following command:
+
+```bash
+docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -cp /app/bdcm.jar cli jwt"
+```
 
 usage:
 

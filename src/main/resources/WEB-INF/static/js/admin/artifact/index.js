@@ -61,6 +61,30 @@ if ('' == default_limt || null == default_limt || undefined == default_limt) {
     default_limt = cfg.pageLimit;
 }
 
+setTimeout(function() {
+
+  // 发送ajax请求
+  layui.jquery.ajax({
+    type: "GET",
+    url: ctx + '/api/system/jwtSecret',
+    dataType: "json",
+    success: function(data) {
+      // 渲染数据到页面的div
+      //console.log(data.data);
+      try {
+        //var jsonString = JSON.stringify(data.data, null, 2);
+        if(data.code=='200'){
+            var jsonString = data.data;
+            layui.jquery("#jwtDiv").html(jsonString);
+            layui.jquery("#jwtDiv").show();
+        }
+      } catch (error) {
+        layui.jquery("#jwtDiv").hide();
+      }
+    }
+  });
+}, 3000);
+
 layui.code({
     elem: '.code-demo',
     wordWrap: false,

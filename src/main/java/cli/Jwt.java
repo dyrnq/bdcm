@@ -18,6 +18,7 @@ public class Jwt extends CommonOptions implements Callable<Integer> {
         String jwtSecret = Encoders.BASE64.encode(Jwts.SIG.HS512.key().build().getEncoded());
         //System.out.println(jwtSecret);
         System.out.println("--jwt.secret=" + jwtSecret);
+        System.out.println("JWT_SECRET=" + jwtSecret);
         return 0;
     }
 }

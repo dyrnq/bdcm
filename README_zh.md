@@ -44,6 +44,16 @@ see [scripts/test-docker.sh](scripts/test-docker.sh)
 | SPRING_DATASOURCE_URL      | 数据源 url                       |                       |
 | SPRING_DATASOURCE_USERNAME | 数据源 username                  |                       |
 | SPRING_DATASOURCE_PASSWORD | 数据源 password                  |                       |
+| JWT_SECRET                 | jwt secret                    |                       |
+
+> 重要:
+
+使用以下命令获取并替换默认的jwt secret:
+
+```bash
+docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -cp /app/bdcm.jar cli jwt"
+```
+
 
 使用例子
 
