@@ -1,8 +1,10 @@
 package com.dyrnq.bdcm.service.job;
 
+import cn.hutool.json.JSONUtil;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
+import com.dyrnq.bdcm.service.ThreadPoolUtils;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.scheduling.annotation.Scheduled;
 import org.noear.wood.MapperWhereQ;
@@ -21,9 +23,25 @@ public class ArtifactAutoDownloadJob implements Runnable {
     @Inject
     ArtifactMapper artifactMapper;
 
+    @Inject
+    ThreadPoolUtils threadPoolUtils;
+
     @Override
     public void run() {
         logger.debug("开始ArtifactAutoDownloadJob..................");
+
+
+        int corePoolSize = threadPoolUtils.getCorePoolSize();
+        int activeCount = threadPoolUtils.getActiveCount();
+        int maxPoolSize = threadPoolUtils.getMaxPoolSize();
+        long taskCount = threadPoolUtils.getTaskCount();
+        int poolSize = threadPoolUtils.getPoolSize();
+        int free = corePoolSize - activeCount;
+        logger.debug("maxPoolSize：{}, activeCount：{} taskCount: {}, poolSize: {}", maxPoolSize, activeCount, taskCount, poolSize);
+        if (free <= 0) {
+            logger.debug("free <= 0, skip");
+            return;
+        }
 
         Act1<MapperWhereQ> condition = mapperWhereQ -> {
             //mapperWhereQ.whereEq("auto_job", 1).andNeq("_lock", 1).limit(1);
@@ -40,6 +58,7 @@ public class ArtifactAutoDownloadJob implements Runnable {
         List<Artifact> list = artifactMapper.selectList(condition);
         if (list != null && !list.isEmpty()) {
             Artifact artifact = list.get(0);
+            logger.debug("{}", JSONUtil.toJsonStr(artifact));
             List<Long> ids = new ArrayList<>();
             ids.add(artifact.getId());
             artifactService.download(ids);

@@ -13,7 +13,6 @@ import com.dyrnq.bdcm.model.ArtJob;
 import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.utils.IDUtils;
-import com.dyrnq.utils.ThreadPoolUtils;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
@@ -61,6 +60,9 @@ public class ArtifactService {
     RepoProps repoProps;
 
     @Inject
+    ThreadPoolUtils threadPoolUtils;
+
+    @Inject
     GrabProps grabProps;
 
     private RepoProps repoProps() {
@@ -76,7 +78,7 @@ public class ArtifactService {
         // 检查yaml路径下是否有预留文件夹.没有则创建
         // 循环调用线程池进行下载任务。
         for (Long id : ids) {
-            ThreadPoolUtils.execute(() -> download(id));
+            threadPoolUtils.execute(() -> download(id));
         }
         return "下载任务已提交";
     }
@@ -90,6 +92,18 @@ public class ArtifactService {
     public String download(Long id, Long artJobId, int retryCount) {
         // 根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
+        if (artifact == null) {
+            log.info("未找到ID为{}的文件", id);
+            return "未找到ID为{}的文件";
+        }
+        if (StringUtils.isEmpty(artifact.getUrl())) {
+            log.info("ID为{}的文件未配置URL", id);
+            return "ID为{}的文件未配置URL";
+        }
+        if (artifact.getFinalStatus() != null && artifact.getFinalStatus() == 1) {
+            log.info("ID为{}的文件已下载完成", id);
+            return "ID为{}的文件已下载完成";
+        }
         // 查看任务锁状态，如果是下载中，驳回下载请求
         if (artJobId != null || (artifact.getLock() == null || artifact.getLock() == 0)) {
             // 通过URL执行下载任务。
@@ -111,7 +125,7 @@ public class ArtifactService {
                 jobId = artJobId;
                 job.setId(jobId);
             }
-            info(jobId, "jobId={}, 开始执行文件 {} 的下载任务...", jobId, artifact.getUrl());
+            info(jobId, "jobId={}, 开始执行文件 {} 的下载任务, retry次数 {}", jobId, artifact.getUrl(), retryCount);
             // 加锁
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
