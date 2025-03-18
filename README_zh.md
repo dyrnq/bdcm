@@ -40,7 +40,7 @@ see [scripts/test-docker.sh](scripts/test-docker.sh)
 | REPO_S3_SECRETKEY          | s3存储secretKey                 |                       |
 | SERVER_PORT                | 端口                            | 8080                  |
 | PROJECT_HOME               | 数据目录                          | $HOME/bdcm            |
-| SPRING_DATASOURCE_TYPE     | 可选 h2，mysql，sqlite，postgresql | h2                    |
+| SPRING_DATABASE_TYPE       | 可选 h2，mysql，sqlite，postgresql | h2                    |
 | SPRING_DATASOURCE_URL      | 数据源 url                       |                       |
 | SPRING_DATASOURCE_USERNAME | 数据源 username                  |                       |
 | SPRING_DATASOURCE_PASSWORD | 数据源 password                  |                       |
