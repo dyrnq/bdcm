@@ -16,6 +16,7 @@ import java.util.List;
 public class GrabProps {
     private HostAndPort httpProxy = new HostAndPort();
     private HostAndPort httpsProxy = new HostAndPort();
+    private ThreadPool threadPool = new ThreadPool();
     private List<KeyVal> httpHeaders;
     private int retry;
     private int retryInterval;
@@ -40,5 +41,16 @@ public class GrabProps {
         private String host;
         private int port;
         private String exclude;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static
+    public class ThreadPool {
+        private String corePoolSize;
+        private String maxPoolSize;
+        private int queueCapacity;
+        private int keepAliveSeconds;
     }
 }

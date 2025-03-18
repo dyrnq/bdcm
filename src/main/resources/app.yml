@@ -32,6 +32,11 @@ repo:
     secretKey:
 
 grab:
+  thread-pool:
+    corePoolSize: auto
+    maxPoolSize: auto
+    queueCapacity: 1000
+    keepAliveSeconds: 60
   retry: 100 #单位次
   retry-interval: 10000 #单位毫秒
   connect-timeout: 1800000 #单位毫秒 30×60×1000=1800000
