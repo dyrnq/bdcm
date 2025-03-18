@@ -81,6 +81,12 @@ public class ArtifactController extends ApiController {
     @Numeric("id")
     public Result add(Context ctx, Artifact artifact) {
         try {
+
+            long count = artifactMapper.db().table("artifact").whereTrue().and().beginEq("url", artifact.getUrl()).end().selectCount();
+            if (count > 0) {
+                return Result.failure(String.format("%s已存在!请不要重复增加!", artifact.getUrl()));
+            }
+
             Long id =IDUtils.getLongID();
 //            logger.info("id={}",id);
             if(ObjectUtil.isNull(artifact.getId())){
@@ -199,7 +205,8 @@ public class ArtifactController extends ApiController {
     public Result batchAdd(Context ctx, String data) {
         try {
             List<String> list = IOUtils.readLines(data);
-
+            int success = 0;
+            int skip = 0;
             for (String str : list) {
                 String[] k = StringUtils.split(str, ",");
                 Artifact artifact = new Artifact();
@@ -220,11 +227,21 @@ public class ArtifactController extends ApiController {
                     artifact.setUrl(k[0]);
                     artifact.setAutoJob(1);
                 }
+                long count = artifactMapper.db().table("artifact").whereTrue().and().beginEq("url", artifact.getUrl()).end().selectCount();
+                if (count > 0) {
+                    logger.info("{}已存在! skip", artifact.getUrl());
+                    skip++;
+                } else {
+                    artifactMapper.insert(artifact, true);
+                    success++;
+                }
 
-                artifactMapper.insert(artifact, true);
             }
-
-            return Result.succeed("ok");
+            String skipStr = "";
+            if (skip > 0) {
+                skipStr = String.format(", 跳过%s条重复数据", skip);
+            }
+            return Result.succeed(String.format("成功添加%s条%s", success, skipStr));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.failure(e.getMessage());

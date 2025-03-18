@@ -170,7 +170,7 @@ $('#addOver3').click(function(){
         success : function(data) {
             if(data.code=='200'){
                 layer.closeAll();
-                layer.msg(commonStr.success);
+                layer.msg(data.data);
                 table.reload('demo',{});
             } else {
                 layer.msg(data.description);
