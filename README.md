@@ -57,3 +57,7 @@ curl -fSL# --remote-name "${DIST_URL}"
 ls -l |grep zookeeper
 )
 ```
+
+<!-- <img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-57-53 bdcm.png" alt="bdcm" width="589" height="310"> -->
+<img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-58-13 bdcm.png" alt="bdcm" width="589" height="310">
+<img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-58-02 bdcm.png" alt="bdcm" width="589" height="310">
