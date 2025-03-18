@@ -8,4 +8,5 @@ public class ArtQuery {
     String artUrl;
     Long artId;
     Integer artAutoJob;
+    Integer artLock;
 }

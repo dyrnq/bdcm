@@ -66,6 +66,49 @@ if ('' == default_limt || null == default_limt || undefined == default_limt) {
     default_limt = cfg.pageLimit;
 }
 
+setInterval(function() {
+
+
+  // 发送ajax请求
+  layui.jquery.ajax({
+    type: "GET",
+    url: ctx + '/api/artJob/report',
+    dataType: "json",
+    success: function(data) {
+      // 渲染数据到页面的div
+      //console.log(data.data);
+      try {
+        //var jsonString = JSON.stringify(data.data, null, 2);
+        var jsonString = data.data;
+        layui.jquery("#yourDiv").html(jsonString);
+        layui.jquery("#yourDiv").show();
+      } catch (error) {
+        layui.jquery("#yourDiv").hide();
+      }
+    }
+  });
+}, 3000);
+setInterval(function() {
+  // 发送ajax请求
+  layui.jquery.ajax({
+    type: "GET",
+    url: ctx + '/api/artJob/threadPool',
+    dataType: "json",
+    success: function(data) {
+      // 渲染数据到页面的div
+      //console.log(data.data);
+      try {
+        //var jsonString = JSON.stringify(data.data, null, 2);
+        var jsonString = data.data;
+        layui.jquery("#threadDiv").html(jsonString);
+        layui.jquery("#threadDiv").show();
+      } catch (error) {
+        layui.jquery("#threadDiv").hide();
+      }
+    }
+  });
+}, 3000);
+
 form.on('switch(demo-checkbox-filter)', function(data){
     var elem = data.elem; // 获得 checkbox 原始 DOM 对象
     var checked = elem.checked; // 获得 checkbox 选中状态

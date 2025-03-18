@@ -9,6 +9,7 @@ import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.model.ArtJob;
 import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.service.ArtJobService;
+import com.dyrnq.bdcm.service.ThreadPoolUtils;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
 import org.noear.solon.annotation.Controller;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapping("api/artJob")
 @Controller
@@ -37,6 +39,7 @@ public class ArtJobController extends ApiController {
     ArtJobLogMapper artJobLogMapper;
     @Inject
     ArtJobService artJobService;
+
 
     @Mapping("")
     public PageResult query(Context ctx, int page, int limit, ArtJobQuery query) {
@@ -88,5 +91,34 @@ public class ArtJobController extends ApiController {
         }
     }
 
+    @Mapping("report")
+    public Result report(Context ctx) {
+        try {
+            Map<String, Long> report = artJobService.report();
+            StringBuilder html = new StringBuilder();
+            for (Map.Entry<String, Long> entry : report.entrySet()) {
+                html.append(entry.getKey()).append(": <b>").append(entry.getValue()).append("</b> ");
+            }
+            return Result.succeed(html.toString());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @Mapping("threadPool")
+    public Result threadPool(Context ctx) {
+        try {
+            Map<String, Object> report = artJobService.threadPool();
+            StringBuilder html = new StringBuilder();
+            for (Map.Entry<String, Object> entry : report.entrySet()) {
+                html.append(entry.getKey()).append(": <b>").append(entry.getValue()).append("</b> ");
+            }
+            return Result.succeed(html.toString());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.failure(e.getMessage());
+        }
+    }
 }
 

@@ -7,4 +7,5 @@ public class ArtJobQuery {
     String artName;
     String artUrl;
     Long artId;
+    Integer status;
 }

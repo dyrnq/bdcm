@@ -65,6 +65,13 @@ public class ArtifactController extends ApiController {
                         mapperWhereQ.and().begin("auto_job is null or auto_job !=1").end();
                     }
                 }
+                if (ObjectUtil.isNotEmpty(query.getArtLock())) {
+                    if (1 == query.getArtLock()) {
+                        mapperWhereQ.and().beginEq("_lock", query.getArtLock()).end();
+                    } else {
+                        mapperWhereQ.and().begin("_lock is null or _lock !=1").end();
+                    }
+                }
 
             };
 

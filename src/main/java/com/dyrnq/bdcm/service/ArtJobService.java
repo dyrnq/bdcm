@@ -6,6 +6,7 @@ import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Inject;
 import org.noear.wood.DbContext;
 import org.noear.wood.DbTableQuery;
 import org.noear.wood.IPage;
@@ -15,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class ArtJobService {
@@ -23,6 +26,38 @@ public class ArtJobService {
     ArtJobMapper artJobMapper;
     @Db
     DbContext db;
+    @Inject
+    ThreadPoolUtils threadPoolUtils;
+
+    public Map<String, Long> report() {
+        Map<String, Long> map = new HashMap<>();
+
+        Long all = artJobMapper.selectCount(null);
+        Long running = artJobMapper.selectCount(mapperWhereQ -> {
+            mapperWhereQ.whereEq("status", 0);
+        });
+        Long success = artJobMapper.selectCount(mapperWhereQ -> {
+            mapperWhereQ.whereEq("status", 1);
+        });
+        Long failure = artJobMapper.selectCount(mapperWhereQ -> {
+            mapperWhereQ.whereEq("status", 2);
+        });
+        map.put("all", all);
+        map.put("running", running);
+        map.put("success", success);
+        map.put("failure", failure);
+        return map;
+    }
+
+    public Map<String, Object> threadPool() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("corePoolSize", threadPoolUtils.getCorePoolSize());
+        map.put("activeCount", threadPoolUtils.getActiveCount());
+        map.put("taskCount", threadPoolUtils.getTaskCount());
+        map.put("completedTaskCount", threadPoolUtils.getCompletedTaskCount());
+        return map;
+    }
+
 
     public IPage<ArtJobView> query(int start, int size, ArtJobQuery query) throws SQLException {
 
@@ -42,6 +77,9 @@ public class ArtJobService {
         }
         if (ObjectUtil.isNotEmpty(query.getArtId())) {
             whereQ.and().beginLk("b.id", "%" + query.getArtId() + "%").end();
+        }
+        if (ObjectUtil.isNotEmpty(query.getStatus())) {
+            whereQ.and().beginEq("a.status", query.getStatus()).end();
         }
 
         IPage<ArtJobView> page = tableQuery.selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
