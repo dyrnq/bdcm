@@ -38,7 +38,14 @@ function addLink(d) {
 
     return editBtn+'&nbsp;'+delBtn+'&nbsp;'+url;
 }
-
+function addLog(d) {
+    if (typeof d !== 'undefined' && d !== null && typeof d.currentJobId !== 'undefined' && d.currentJobId!==null) {
+        let logBtn  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+ctx+'/api/artJob/log/'+d.currentJobId+'" target="_blank">log</a>'
+        return logBtn;
+    }else{
+        return '';
+    }
+}
 
 
 layui.use(function(){
@@ -199,7 +206,7 @@ $('#addOver3').click(function(){
             , {field: 'autoJob', title: 'auto',width: 50, templet: "<div>{{d.autoJob === 1 ? 'yes' : ''}}</div>", }
             , {field: 'lock', title: 'lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>", width: 50 }
             , {field: 'finalStatus', title: 'final', width: 80, templet: "<div>{{d.finalStatus === 1 ? 'success' : ''}}</div>", }
-            , {field: 'currentJobId', title: 'currentJobId' }
+            , {field: 'currentJobId', title: 'log', templet: addLog}
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
 
 //            , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
@@ -325,10 +332,10 @@ $('#addOver3').click(function(){
                     show: true,
                     data: [
                         {title: commonStr.del, id: 'del'},
-                        {title: "auto/enable", id: 'enable'},
-                        {title: "auto/disable", id: 'disable'},
-                        {title: "下载", id: 'download'},
-                        {title: "reset", id: 'reset'},
+                        {title: commonStr.autoE, id: 'enable'},
+                        {title: commonStr.autoD, id: 'disable'},
+                        {title: commonStr.download, id: 'download'},
+                        {title: commonStr.reset, id: 'reset'},
 
                         ],
                     click: function(data, othis){

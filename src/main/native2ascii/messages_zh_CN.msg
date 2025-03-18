@@ -81,6 +81,11 @@ commonStr.stop       = 关闭
 commonStr.restart    = 重启
 commonStr.reload     = reload
 commonStr.config     = 配置
+commonStr.reset      = 重置
+commonStr.autoE      = 自动下载/打开
+commonStr.autoD      = 自动下载/关闭
+commonStr.data       = 数据
+commonStr.tips       = 说明
 
 loginStr.add         = 添加
 loginStr.authCode    = 身份码
@@ -160,6 +165,8 @@ menu.cert        = 证书管理
 menu.monitor     = 系统运行状态
 menu.manifest    = 清单管理
 menu.deploy      = 发布管理
+menu.artifact    = 制品管理
+menu.artJob      = 下载日志
 
 desc.route = Route 也称之为路由，可以通过定义一些规则来匹配客户端的请求，然后根据匹配结果加载并执行相应的插件，并把请求转发给到指定 Upstream（上游）。
 desc.service = Service 是某类 API 的抽象（也可以理解为一组 Route 的抽象）。它通常与上游服务抽象是一一对应的，Route 与 Service 之间，通常是 N:1 的关系。

@@ -81,6 +81,11 @@ commonStr.stop       = stop
 commonStr.restart    = restart
 commonStr.reload     = reload
 commonStr.config     = config
+commonStr.reset      = reset
+commonStr.autoE      = auto/enable
+commonStr.autoD      = auto/disable
+commonStr.data       = data
+commonStr.tips       = tips
 
 loginStr.add         = Add
 loginStr.authCode    = Auth code
@@ -160,6 +165,8 @@ menu.cert        = Certificate
 menu.monitor     = System Status
 menu.manifest    = Manifest
 menu.deploy      = Deploy
+menu.artifact    = artifact
+menu.artJob      = artJob
 
 desc.route = Routes match the client's request based on defined rules, loads and executes the corresponding plugins, and forwards the request to the specified Upstream.
 desc.service = A Service is an abstraction of an API (which can also be understood as a set of Route abstractions). It usually corresponds to an upstream service abstraction.

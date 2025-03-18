@@ -29,7 +29,7 @@ input[name='param']{
         <!-- 内容主体区域 -->
         <div style="padding: 15px">
             <fieldset class="layui-elem-field layui-field-title">
-                <legend>artifact</legend>
+                <legend>${i18n.get("menu.artifact")}</legend>
             </fieldset>
 
             <form class="layui-form" id="searchForm" method="post">
@@ -108,7 +108,7 @@ input[name='param']{
         <form id="addForm1">
             <input type="hidden" name="u">
 
-            <div class="layui-form-item" id="div_id">
+            <div class="layui-form-item" id="div_id" style="display: none">
                 <label class="layui-form-label">id</label>
                 <div class="layui-input-block">
                     <input type="text" name="id" class="layui-input">
@@ -169,7 +169,7 @@ input[name='param']{
         <form id="addForm3">
 
             <div class="layui-form-item">
-                <label class="layui-form-label">data</label>
+                <label class="layui-form-label">${i18n.get("commonStr.data")}</label>
                 <div class="layui-input-block">
                     <textarea name="data" placeholder="多行文本框" class="layui-textarea"></textarea>
                 </div>
@@ -177,7 +177,7 @@ input[name='param']{
 
 
             <div class="layui-form-item">
-                <label class="layui-form-label">说明</label>
+                <label class="layui-form-label">${i18n.get("commonStr.tips")}</label>
             <div class="layui-input-block">
 <!--                多行文本,每行一条数据,格式为: <b>name,url,autoJob</b><br/>-->
                 <pre class="layui-code code-demo" lay-options="{}">
