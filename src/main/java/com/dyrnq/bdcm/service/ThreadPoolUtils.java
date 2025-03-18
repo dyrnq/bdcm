@@ -57,6 +57,11 @@ public class ThreadPoolUtils {
                 workQueue,
                 new ThreadPoolExecutor.AbortPolicy() // 拒绝策略
         );
+        try {
+            ((ThreadPoolExecutor) executorService).prestartAllCoreThreads();
+        } catch (Exception ignore) {
+
+        }
     }
 
     public int getCorePoolSize() {
