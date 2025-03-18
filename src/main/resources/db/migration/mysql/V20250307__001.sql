@@ -18,6 +18,7 @@ CREATE TABLE `artifact` (
   `begin_lock` TIMESTAMP DEFAULT NULL ,
   `auto_job` INT DEFAULT NULL,
   `current_job_id` BIGINT DEFAULT NULL ,
+  INDEX idx_url (`url`(767)),
   PRIMARY KEY (`id`)
 );
 

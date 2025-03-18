@@ -20,6 +20,8 @@ CREATE TABLE public.artifact (
   current_job_id BIGINT DEFAULT NULL ,
   PRIMARY KEY (id)
 );
+CREATE INDEX idx_url ON public.artifact (url);
+
 
 CREATE TABLE public.art_job (
   id BIGINT NOT NULL ,

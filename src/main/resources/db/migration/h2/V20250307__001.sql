@@ -20,6 +20,7 @@ CREATE TABLE `artifact` (
   `current_job_id` BIGINT DEFAULT NULL ,
   PRIMARY KEY (`id`)
 );
+CREATE INDEX idx_url ON `artifact` (url);
 
 CREATE TABLE `art_job` (
   `id` BIGINT NOT NULL ,
