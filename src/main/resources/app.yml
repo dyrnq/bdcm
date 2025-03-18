@@ -32,6 +32,10 @@ repo:
     secretKey:
 
 grab:
+  retry: 100 #单位次
+  retry-interval: 10000 #单位毫秒
+  connect-timeout: 1800000 #单位毫秒 30×60×1000=1800000
+  read-timeout: 1800000 #单位毫秒 30×60×1000=1800000
   http-headers:
     - name: User-Agent
       #value: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"

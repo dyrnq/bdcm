@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm.service;
 
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.GrabProps;
 import com.dyrnq.bdcm.HomeDir;
@@ -81,12 +82,12 @@ public class ArtifactService {
     }
 
     public String download(Long id) {
-        return download(id, null);
+        return download(id, null, 0);
     }
 
 
     // 单文件下载
-    public String download(Long id, Long artJobId) {
+    public String download(Long id, Long artJobId, int retryCount) {
         // 根据id获取URL
         Artifact artifact = artifactMapper.selectById(id);
         // 查看任务锁状态，如果是下载中，驳回下载请求
@@ -122,9 +123,9 @@ public class ArtifactService {
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
             if (repoProps.getType().equals(RepoType.LOCAL)) {
-                saveFilePath = StringUtils.joinWith(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
+                saveFilePath = StringUtils.joinWith(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
             } else {
-                saveFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl : String.format("/%s", rawUrl));
+                saveFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
             }
             // 设置代理
             Proxy proxy = null;
@@ -161,9 +162,15 @@ public class ArtifactService {
                 job.setProgress("100%");
             } catch (Exception e) {
                 error(jobId, e);
-//                job.setEndTime(new Date());
-//                job.setStatus(2);
-                download(id, jobId);
+
+                ThreadUtil.safeSleep(grabProps.getRetryInterval());
+                retryCount = retryCount + 1;
+                if (retryCount < grabProps.getRetry()) {
+                    download(id, jobId, retryCount);
+                } else {
+                    job.setEndTime(new Date());
+                    job.setStatus(2);
+                }
             }
 
             // 补足下载结果与完成时间。
@@ -327,8 +334,8 @@ public class ArtifactService {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .followRedirects(true)
                 .followSslRedirects(true)
-                .connectTimeout(30, TimeUnit.MINUTES) // 连接超时
-                .readTimeout(30, TimeUnit.MINUTES); // 读取超时
+                .connectTimeout(grabProps.getConnectTimeout(), TimeUnit.MILLISECONDS) // 连接超时
+                .readTimeout(grabProps.getReadTimeout(), TimeUnit.MILLISECONDS); // 读取超时
 
         if (proxy != null) {
             builder.proxy(proxy); // 设置代理

@@ -17,6 +17,10 @@ public class GrabProps {
     private HostAndPort httpProxy = new HostAndPort();
     private HostAndPort httpsProxy = new HostAndPort();
     private List<KeyVal> httpHeaders;
+    private int retry;
+    private int retryInterval;
+    private int connectTimeout;
+    private int readTimeout;
 
     @Data
     @AllArgsConstructor
