@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
@@ -30,7 +30,7 @@ public class ArtJobService {
     ThreadPoolUtils threadPoolUtils;
 
     public Map<String, Long> report() {
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new LinkedHashMap<>();
 
         Long all = artJobMapper.selectCount(null);
         Long running = artJobMapper.selectCount(mapperWhereQ -> {
@@ -50,10 +50,11 @@ public class ArtJobService {
     }
 
     public Map<String, Object> threadPool() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("corePoolSize", threadPoolUtils.getCorePoolSize());
-        map.put("activeCount", threadPoolUtils.getActiveCount());
+        map.put("poolSize", threadPoolUtils.getPoolSize());
         map.put("taskCount", threadPoolUtils.getTaskCount());
+        map.put("activeCount", threadPoolUtils.getActiveCount());
         map.put("completedTaskCount", threadPoolUtils.getCompletedTaskCount());
         return map;
     }
