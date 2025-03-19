@@ -8,6 +8,7 @@ import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.util.MimeMappings;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.noear.solon.annotation.Configuration;
@@ -116,8 +117,14 @@ public class RepoConfig {
         Thread tcpThread = new Thread(() -> {
             PathHandler path = new PathHandler();
             ResourceHandler resourceHandler = new ResourceHandler(new FileResourceManager(new File(repoProps().getLocal().getPath()), 100));
-            resourceHandler.setDirectoryListingEnabled(true);
 
+            String textContentTypeUTF8 = "text/plain; charset=utf-8";
+            String[] textTypes = new String[]{"txt", "cfg", "md", "log", "conf", "properties", "ini", "sh", "bat", "java", "js", "css", "xml", "json", "yaml", "yml", "sql", "service"};
+            MimeMappings.Builder builder = MimeMappings.builder(true);
+            for (String textType : textTypes) {
+                builder.addMapping(textType, textContentTypeUTF8);
+            }
+            resourceHandler.setMimeMappings(builder.build());
             path.addPrefixPath("/", resourceHandler);
 
             Undertow server = Undertow.builder()
