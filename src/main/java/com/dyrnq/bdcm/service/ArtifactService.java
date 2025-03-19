@@ -174,6 +174,7 @@ public class ArtifactService {
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
+                artJobMapper.updateById(job, false);
             } catch (Exception e) {
                 error(jobId, e);
 
@@ -182,13 +183,14 @@ public class ArtifactService {
                 if (retryCount < grabProps.getRetry()) {
                     download(id, jobId, retryCount);
                 } else {
-                    job.setEndTime(new Date());
+//                    job.setEndTime(new Date());
                     job.setStatus(2);
+                    artJobMapper.updateById(job, false);
                 }
             }
 
-            // 补足下载结果与完成时间。
-            artJobMapper.updateById(job, false);
+//            // 补足下载结果与完成时间。
+//            artJobMapper.updateById(job, false);
             // 更新任务信息表
             artifact.setLock(0);
             artifact.setFinalStatus(job.getStatus());
