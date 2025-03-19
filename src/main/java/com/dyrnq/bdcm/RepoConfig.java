@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.dyrnq.utils.AddressUtils;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 
 /**
  * "repo" 是 "repository" 的缩写。
@@ -27,36 +29,20 @@ import java.io.File;
 
 @Configuration
 public class RepoConfig {
+    final static int DEFAULT_REPO_LISTEN_PORT = 9980;
     static Logger logger = LoggerFactory.getLogger(RepoConfig.class);
     @Inject
     RepoProps repoProps;
     @Inject
     HomeDir homeDir;
+    private String guessExternalUrl;
 
     private RepoProps repoProps() {
         return repoProps;
     }
 
     public String guessExternalUrl() {
-        String type = repoProps().getType();
-        String externalUrl = repoProps().getExternalUrl();
-        RepoProps.RepoS3 s3 = repoProps().getS3();
-        RepoProps.RepoLocal local = repoProps().getLocal();
-        if (StrUtil.isNotEmpty(externalUrl)) {
-            if (StrUtil.endWith(externalUrl, "/")) {
-                return externalUrl;
-            } else {
-                return externalUrl + "/";
-            }
-        } else {
-            if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, type)) {
-                return "http://"+StrUtil.replace(local.getListen(), "0.0.0.0", "127.0.0.1")+"/";
-            } else {
-
-                return StrUtil.join("/", s3.getEndpoint(), s3.getBucket(), "");
-
-            }
-        }
+        return guessExternalUrl;
     }
 
     private void info() {
@@ -76,6 +62,15 @@ public class RepoConfig {
     @Init
     public void init() {
         info();
+        String externalUrl = repoProps().getExternalUrl();
+        if (StrUtil.isNotEmpty(externalUrl)) {
+            if (StrUtil.endWith(externalUrl, "/")) {
+                guessExternalUrl = externalUrl;
+            } else {
+                guessExternalUrl = externalUrl + "/";
+            }
+        }
+
         if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, repoProps().getType())) {
             if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
                 String defaultRepoLocalPath = StringUtils.joinWith(File.separator, homeDir.getHomeAbsolutePath(), "local_repo");
@@ -83,36 +78,29 @@ public class RepoConfig {
                     repoProps().getLocal().setPath(defaultRepoLocalPath);
                 }
                 FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
-                Thread tcpThread = getThread(repoProps().getLocal().getListen());
+                InetSocketAddress inetSocketAddress = AddressUtils.parseAddress(repoProps().getLocal().getListen(), DEFAULT_REPO_LISTEN_PORT, true);
+                if (StrUtil.equalsAny(inetSocketAddress.getHostName(), "", "0.0.0.0")) {
+                    guessExternalUrl = String.format("http://127.0.0.1:%s/", inetSocketAddress.getPort());
+                } else if (StrUtil.equals(inetSocketAddress.getHostName(), "0:0:0:0:0:0:0:0")) {
+                    guessExternalUrl = String.format("http://[0000:0000:0000:0000:0000:0000:0000:0001]:%s/", inetSocketAddress.getPort());
+                }
+                Thread tcpThread = getThread(inetSocketAddress);
                 tcpThread.start();
             }
+        } else {
+            if (StrUtil.isNotBlank(guessExternalUrl)) {
+                guessExternalUrl = StrUtil.join("/", repoProps().getS3().getEndpoint(), repoProps().getS3().getBucket(), "");
+            }
         }
+        logger.debug("**********guessExternalUrl={}", guessExternalUrl);
     }
 
     @NotNull
-    private Thread getThread(String repoLocalListen) {
+    private Thread getThread(InetSocketAddress inetSocketAddress) {
 
-        String[] listenArray = StringUtils.splitByWholeSeparator(repoLocalListen, ":");
-        int port = 9888;
-        String host = "0.0.0.0";
-
-        if (listenArray.length >= 2) {
-            try {
-                port = Integer.parseInt(listenArray[1]);
-            } catch (Exception e) {
-                logger.warn(e.getMessage());
-            }
-            host = listenArray[0];
-        } else {
-            try {
-                port = Integer.parseInt(listenArray[0]);
-            } catch (Exception e) {
-                logger.warn(e.getMessage());
-            }
-        }
-        final int port_final = port;
-        final String host_final = host;
-
+        final int port_final = inetSocketAddress.getPort();
+        final String host_final = inetSocketAddress.getHostName();
+        logger.info("***************host={}, port={}", host_final, port_final);
 
         Thread tcpThread = new Thread(() -> {
             PathHandler path = new PathHandler();
@@ -126,6 +114,7 @@ public class RepoConfig {
             }
             resourceHandler.setMimeMappings(builder.build());
             path.addPrefixPath("/", resourceHandler);
+
 
             Undertow server = Undertow.builder()
                     .addHttpListener(port_final, host_final)
