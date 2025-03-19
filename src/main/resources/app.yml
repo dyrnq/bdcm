@@ -22,9 +22,8 @@ repo:
   external-url:
   type: local
   local:
-    # 默认为$HOME/bdcm/local_repo
-    path:
-    listen: 0.0.0.0:9980
+    path: # 默认为$HOME/bdcm/local_repo
+    listen: 0.0.0.0:9980 #如果是ipv6 [::]:9980
   s3:
     endpoint:
     bucket:
