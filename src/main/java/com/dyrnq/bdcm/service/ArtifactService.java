@@ -21,6 +21,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple2;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
@@ -36,6 +38,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -168,9 +171,9 @@ public class ArtifactService {
                 }
 
             }
-
+            Tuple2<Long, String> tuple = null;
             try {
-                downloadFileWithResume(fileURL, saveFilePath, proxy, jobId);
+                tuple = downloadFileWithResume(fileURL, saveFilePath, proxy, jobId, artifact.getEtag());
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
@@ -194,6 +197,10 @@ public class ArtifactService {
             // 更新任务信息表
             artifact.setLock(0);
             artifact.setFinalStatus(job.getStatus());
+            if (tuple != null) {
+                artifact.setFileSize(tuple.v1);
+                artifact.setEtag(tuple.v2);
+            }
             artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
         } else {
@@ -202,30 +209,43 @@ public class ArtifactService {
         }
     }
 
-    public void downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long jobId) throws Exception {
+    public Tuple2<Long, String> downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long jobId, String eTagPersistence) throws Exception {
         File file = new File(saveFilePath);
         String rawUrl = fileURL.split("//")[1];
+
+        long existingFileSize = 0;
+
+        long remoteFileSize = -1;
+        String eTag = "";
+        Tuple2<Long, String> tuple = null;
+
+        try {
+            tuple = getRemoteFileSize(fileURL, proxy);
+        } catch (Exception ignore) {
+
+        }
+        if (tuple != null) {
+            remoteFileSize = tuple.v1;
+            eTag = tuple.v2;
+        }
+
         String progressFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StringUtils.replace(rawUrl, "/", "__") + ".progress"); // 进度文件
         File progressFile = new File(progressFilePath); // 进度文件
-        long existingFileSize = 0;
 
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
         if (file.exists()) {
             existingFileSize = file.length();
-            long remoteFileSize = -1;
-            try {
-                remoteFileSize = getRemoteFileSize(fileURL, proxy);
-            } catch (Exception ignore) {
 
-            }
-//            if (remoteFileSize == -1) {
-//                remoteFileSize = getRemoteFileSize(fileURL, proxy); // 如果失败，尝试使用代理
-//            }
             if (remoteFileSize == file.length()) {
-                info(jobId, "该文件已存在且完整，无需重新下载,jobId={}, saveFilePath={}", jobId, saveFilePath);
-                return; // 文件已存在且完整，直接返回
+                info(jobId, "该文件已存在且完整，无需重新下载, jobId={}, saveFilePath={}, eTag={}", jobId, saveFilePath, eTag);
+                return tuple; // 文件已存在且完整，直接返回
             } else {
-                info(jobId, "文件已存在但不完整，继续下载,jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}", jobId, saveFilePath, remoteFileSize, existingFileSize);
+                info(jobId, "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag);
+            }
+
+            if (!StringUtils.equalsIgnoreCase(eTag, eTagPersistence)) {
+                existingFileSize = 0;
+                info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
             }
         }
 
@@ -247,9 +267,9 @@ public class ArtifactService {
         }
 
         if (proxy != null) {
-            info(jobId, "使用代理下载, proxy={}", proxy);
+            info(jobId, "jobId={}, 使用代理下载, proxy={}", jobId, proxy);
         } else {
-            info(jobId, "不使用代理下载");
+            info(jobId, "jobId={}, 不使用代理下载", jobId);
         }
         // 创建 OkHttpClient
         OkHttpClient client = createOkHttpClient(proxy);
@@ -341,6 +361,7 @@ public class ArtifactService {
             } catch (Exception ignored) {
             }
         }
+        return tuple;
     }
 
     /**
@@ -369,7 +390,7 @@ public class ArtifactService {
 
         Request.Builder requestBuilder = new Request.Builder().url(fileURL);
         requestBuilder.addHeader("Range", "bytes=" + existingFileSize + "-");
-        if (httpHeaders != null && httpHeaders.size() > 0) {
+        if (httpHeaders != null && !httpHeaders.isEmpty()) {
             for (GrabProps.KeyVal header : httpHeaders) {
                 requestBuilder.addHeader(header.getName(), header.getValue());
             }
@@ -380,7 +401,11 @@ public class ArtifactService {
     /**
      * 获取远程文件的大小
      */
-    private long getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
+    private Tuple2<Long, String> getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
+        Tuple2<Long, String> tuple2 = null;
+        long contentLength = -1;
+        String eTag = "";
+
         OkHttpClient client = createOkHttpClient(proxy);
         Request request = new Request.Builder()
                 .url(fileURL)
@@ -391,12 +416,30 @@ public class ArtifactService {
             response = client.newCall(request).execute();
             if (response.isSuccessful()) {
 
-                String contentLength = response.header("Content-Length");
-                if (contentLength != null) {
-                    return Long.parseLong(contentLength);
-                } else {
-                    return -1;
+
+                try {
+                    contentLength = Long.parseLong(Objects.requireNonNull(response.header("Content-Length")));
+                } catch (Exception ignored) {
+
                 }
+                try {
+//
+//                    ETag机制同时支持强校验和弱校验。它们通过ETag标识符的开头是否存在“W/”来区分，如：
+//
+//                    "123456789"   -- 一个强ETag验证符
+//                    W/"123456789"  -- 一个弱ETag验证符
+//                    强校验的ETag匹配要求两个资源内容的每个字节需完全相同，包括所有其他实体字段（如Content-Language）不发生变化。强ETag允许重新装配和缓存部分响应，以及字节范围请求。弱校验的ETag匹配要求两个资源在语义上相等，这意味着在实际情况下它们可以互换，而且缓存副本也可以使用。不过这些资源不需要每个字节相同，因此弱ETag不适合字节范围请求。当Web服务器无法生成强ETag的时候，比如动态生成的内容，弱ETag就可能发挥作用了。
+
+                    eTag = Objects.requireNonNull(response.header("ETag"));
+                    if (StringUtils.startsWith(eTag, "W/")) {
+                        eTag = StringUtils.substring(eTag, 2);
+                    }
+                    eTag = StringUtils.replace(eTag, "\"", "");
+                } catch (Exception ignored) {
+
+                }
+                tuple2 = Tuple.tuple(contentLength, eTag);
+
             } else {
                 throw new IOException("请求失败: " + response.code() + " " + response.message());
             }
@@ -416,6 +459,7 @@ public class ArtifactService {
             } catch (Exception ignored) {
             }
         }
+        return tuple2;
     }
 
     /**
