@@ -409,7 +409,7 @@ public class ArtifactService {
         OkHttpClient client = createOkHttpClient(proxy);
         Request request = new Request.Builder()
                 .url(fileURL)
-                .addHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36")
+                .addHeader("User-Agent", "curl/7.88.1")
                 .head() // 使用 HEAD 请求获取文件大小
                 .build();
         Response response = null;
