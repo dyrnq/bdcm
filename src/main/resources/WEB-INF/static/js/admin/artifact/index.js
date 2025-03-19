@@ -229,8 +229,10 @@ $('#addOver3').click(function(){
             , {field: 'url', title: 'url', width: 300, sort: true}
             , {field: 'autoJob', title: 'auto',width: 50, templet: "<div>{{d.autoJob === 1 ? 'yes' : ''}}</div>", }
             , {field: 'lock', title: 'lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>", width: 50 }
-            , {field: 'finalStatus', title: 'final', width: 80, templet: "<div>{{d.finalStatus === 1 ? 'success' : ''}}</div>", }
-            , {field: 'currentJobId', title: 'log', templet: addLog}
+            , {field: 'finalStatus', title: 'final', width: 80, templet: "<div>{{d.finalStatus === 1 ? 'success' : ''}}</div>" }
+            , {field: 'etag', title: 'etag'}
+            , {field: 'fileSize', title: 'fileSize', width: 120 }
+            , {field: 'currentJobId', title: 'log', width: 50, templet: addLog}
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
 
 //            , {field: 'insertTime', title: 'insert_time', sort: true, width: 300, templet: "<div>{{!d.insertTime?'-':layui.util.toDateString(d.insertTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }

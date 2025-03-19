@@ -41,4 +41,9 @@ public class Artifact {
     @Column("current_job_id")
     private Long currentJobId;
 
+    @Column("etag")
+    private String etag;
+
+    @Column("file_size")
+    private Long fileSize;
 }
