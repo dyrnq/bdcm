@@ -236,7 +236,7 @@ public class ArtifactController extends ApiController {
                 }
                 long count = artifactMapper.db().table("artifact").whereTrue().and().beginEq("url", artifact.getUrl()).end().selectCount();
                 if (count > 0) {
-                    logger.info("{}已存在! skip", artifact.getUrl());
+                    logger.debug("{}已存在! skip", artifact.getUrl());
                     skip++;
                 } else {
                     artifactMapper.insert(artifact, true);
