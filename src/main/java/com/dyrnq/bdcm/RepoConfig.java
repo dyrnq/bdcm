@@ -9,6 +9,8 @@ import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.server.handlers.resource.ResourceManager;
+import io.undertow.util.ETag;
 import io.undertow.util.MimeMappings;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -104,7 +106,14 @@ public class RepoConfig {
 
         Thread tcpThread = new Thread(() -> {
             PathHandler path = new PathHandler();
-            ResourceHandler resourceHandler = new ResourceHandler(new FileResourceManager(new File(repoProps().getLocal().getPath()), 100));
+            ResourceManager resourceManager = FileResourceManager
+                    .builder().setBase(new File(repoProps().getLocal().getPath()).toPath())
+                    .setETagFunction(path1 -> {
+                        long lastModified = path1.toFile().lastModified();
+                        long size = path1.toFile().length();
+                        return new ETag(false, lastModified + "-" + size);
+                    }).build();
+            ResourceHandler resourceHandler = new ResourceHandler(resourceManager);
 
             String textContentTypeUTF8 = "text/plain; charset=utf-8";
             String[] textTypes = new String[]{"txt", "cfg", "md", "log", "conf", "properties", "ini", "sh", "bat", "java", "js", "css", "xml", "json", "yaml", "yml", "sql", "service"};
