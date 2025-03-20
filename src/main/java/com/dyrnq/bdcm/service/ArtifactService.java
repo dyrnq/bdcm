@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
@@ -346,19 +347,9 @@ public class ArtifactService {
 
             }
         } finally {
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (Exception ignored) {
-            }
-            try {
-                if (response != null) {
-                    if (response.body() != null) {
-                        response.body().close();
-                    }
-                }
-            } catch (Exception ignored) {
+            if (response != null) {
+                IOUtils.closeQuietly(response);
+                IOUtils.closeQuietly(response.body());
             }
         }
         return tuple;
@@ -445,19 +436,9 @@ public class ArtifactService {
                 throw new IOException("请求失败: " + response.code() + " " + response.message());
             }
         } finally {
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (Exception ignored) {
-            }
-            try {
-                if (response != null) {
-                    if (response.body() != null) {
-                        response.body().close();
-                    }
-                }
-            } catch (Exception ignored) {
+            if (response != null) {
+                IOUtils.closeQuietly(response);
+                IOUtils.closeQuietly(response.body());
             }
         }
         return tuple2;
