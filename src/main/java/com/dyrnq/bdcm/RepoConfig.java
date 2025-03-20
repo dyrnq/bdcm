@@ -81,16 +81,18 @@ public class RepoConfig {
                 }
                 FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
                 InetSocketAddress inetSocketAddress = AddressUtils.parseAddress(repoProps().getLocal().getListen(), DEFAULT_REPO_LISTEN_PORT, true);
-                if (StrUtil.equalsAny(inetSocketAddress.getHostName(), "", "0.0.0.0")) {
-                    guessExternalUrl = String.format("http://127.0.0.1:%s/", inetSocketAddress.getPort());
-                } else if (StrUtil.equals(inetSocketAddress.getHostName(), "0:0:0:0:0:0:0:0")) {
-                    guessExternalUrl = String.format("http://[0000:0000:0000:0000:0000:0000:0000:0001]:%s/", inetSocketAddress.getPort());
+                if (StrUtil.isBlank(guessExternalUrl)) {
+                    if (StrUtil.equalsAny(inetSocketAddress.getHostName(), "", "0.0.0.0")) {
+                        guessExternalUrl = String.format("http://127.0.0.1:%s/", inetSocketAddress.getPort());
+                    } else if (StrUtil.equals(inetSocketAddress.getHostName(), "0:0:0:0:0:0:0:0")) {
+                        guessExternalUrl = String.format("http://[0000:0000:0000:0000:0000:0000:0000:0001]:%s/", inetSocketAddress.getPort());
+                    }
                 }
                 Thread tcpThread = getThread(inetSocketAddress);
                 tcpThread.start();
             }
         } else {
-            if (StrUtil.isNotBlank(guessExternalUrl)) {
+            if (StrUtil.isBlank(guessExternalUrl)) {
                 guessExternalUrl = StrUtil.join("/", repoProps().getS3().getEndpoint(), repoProps().getS3().getBucket(), "");
             }
         }
@@ -112,7 +114,8 @@ public class RepoConfig {
                         long lastModified = path1.toFile().lastModified();
                         long size = path1.toFile().length();
                         return new ETag(false, lastModified + "-" + size);
-                    }).build();
+                    })
+                    .build();
             ResourceHandler resourceHandler = new ResourceHandler(resourceManager);
 
             String textContentTypeUTF8 = "text/plain; charset=utf-8";
@@ -122,7 +125,40 @@ public class RepoConfig {
                 builder.addMapping(textType, textContentTypeUTF8);
             }
             resourceHandler.setMimeMappings(builder.build());
+            resourceHandler.setDirectoryListingEnabled(true);
             path.addPrefixPath("/", resourceHandler);
+
+            String additionalPrefixMapping = repoProps.getLocal().getAdditionalPrefixMapping();
+
+            if (StrUtil.isNotBlank(additionalPrefixMapping)) {
+                String[] split = StringUtils.split(additionalPrefixMapping, ",");
+                for (String s : split) {
+                    String[] split1 = s.split("=");
+                    if (split1.length == 2) {
+                        String addPrefix = split1[0];
+                        String addPath = split1[1];
+
+                        if (StrUtil.isBlank(addPrefix) || StrUtil.equalsIgnoreCase(addPrefix, "/")) {
+                            logger.warn("addPrefix is invalid: {}", addPrefix);
+                            continue;
+                        }
+                        ResourceManager resourceManagerAdd = FileResourceManager
+                                .builder().setBase(new File(addPath).toPath())
+                                .setETagFunction(path2 -> {
+                                    long lastModified = path2.toFile().lastModified();
+                                    long size = path2.toFile().length();
+                                    return new ETag(false, lastModified + "-" + size);
+                                })
+                                .build();
+                        ResourceHandler resourceHandlerAdd = new ResourceHandler(resourceManagerAdd);
+                        resourceHandlerAdd.setMimeMappings(builder.build());
+                        resourceHandlerAdd.setDirectoryListingEnabled(true);
+                        path.addPrefixPath(addPrefix, resourceHandlerAdd);
+                    } else {
+                        logger.warn("additionalPrefixMapping is invalid: {}", s);
+                    }
+                }
+            }
 
 
             Undertow server = Undertow.builder()

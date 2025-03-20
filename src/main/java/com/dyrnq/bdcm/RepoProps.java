@@ -36,5 +36,6 @@ public class RepoProps implements Serializable {
     public class RepoLocal implements Serializable {
         private String path;
         private String listen;
+        private String additionalPrefixMapping;
     }
 }

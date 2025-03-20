@@ -39,12 +39,19 @@ public class WebApp {
         Solon.start(WebApp.class, args, app -> {
             Set<String> allNodes = Solon.cfg().stringPropertyNames();
             for (String entry : allNodes) {
-                String envName = StringUtils.upperCase(entry);
-                String getValue = SystemUtil.get(StringUtils.replace(envName, "-", "").replace(".", "_"), true);
+                String envName1 = StringUtils.upperCase(StringUtils.replace(entry, "-", "").replace(".", "_"));
+                String envName2 = StringUtils.upperCase(StringUtils.replace(entry, "-", "_").replace(".", "_"));
+                String envName3 = StringUtils.upperCase(StringUtils.replace(entry.replaceAll("(?<!^)(?=[A-Z])", "_"), "-", "_").replace(".", "_"));
+
+                String getValue = SystemUtil.get(envName1, true);
                 if (getValue != null) {
                     Solon.cfg().setProperty(entry, getValue);
                 }
-                getValue = SystemUtil.get(StringUtils.replace(envName, "-", "_").replace(".", "_"), true);
+                getValue = SystemUtil.get(envName2, true);
+                if (getValue != null) {
+                    Solon.cfg().setProperty(entry, getValue);
+                }
+                getValue = SystemUtil.get(envName3, true);
                 if (getValue != null) {
                     Solon.cfg().setProperty(entry, getValue);
                 }

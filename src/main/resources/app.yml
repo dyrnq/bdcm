@@ -24,6 +24,7 @@ repo:
   local:
     path: # 默认为$HOME/bdcm/local_repo
     listen: 0.0.0.0:9980 #如果是ipv6 [::]:9980
+    additional-prefix-mapping: # 额外的前缀映射，比如：/repo1=repo1,/repo2=repo2
   s3:
     endpoint:
     bucket:
