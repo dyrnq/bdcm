@@ -20,32 +20,34 @@ see [scripts/test-docker.sh](scripts/test-docker.sh)
 
 支持环境变量
 
-| 变量名                                  | 含义                                                                | 默认值                   |
-|--------------------------------------|-------------------------------------------------------------------|-----------------------|
-| HTTP_PROXY_ENABLE                    | http proxy switch                                                 | false                 |
-| HTTP_PROXY_HOST                      | http proxy host                                                   |                       |
-| HTTP_PROXY_PORT                      | http proxy port                                                   |                       |
-| HTTP_PROXY_EXCLUDE                   | http proxy exclude                                                |                       |
-| HTTPS_PROXY_ENABLE                   | https proxy switch                                                | false                 |
-| HTTPS_PROXY_HOST                     | https proxy host                                                  |                       |
-| HTTPS_PROXY_PORT                     | https proxy port                                                  |                       |
-| HTTPS_PROXY_EXCLUDE                  | https proxy exclude                                               |                       |
-| REPO_EXTERNAL_URL                    | repo external url                                                 |                       |
-| REPO_TYPE                            | 存储类型                                                              | local                 |
-| REPO_LOCAL_PATH                      | 本地存储路径                                                            | $HOME/bdcm/local_repo |
-| REPO_LOCAL_LISTEN                    | 本地存储监听地址                                                          | 0.0.0.0:9980,也可以不配置   |
-| REPO_S3_ENDPOINT                     | s3存储endpoint                                                      |                       |
-| REPO_S3_BUCKET                       | s3存储bucket                                                        |                       |
-| REPO_S3_ACCESSKEY                    | s3存储accessKey                                                     |                       |
-| REPO_S3_SECRETKEY                    | s3存储secretKey                                                     |                       |
-| SERVER_PORT                          | 端口                                                                | 8080                  |
-| PROJECT_HOME                         | 数据目录                                                              | $HOME/bdcm            |
-| SPRING_DATABASE_TYPE                 | 可选 h2，mysql，sqlite，postgresql                                     | h2                    |
-| SPRING_DATASOURCE_URL                | 数据源 url                                                           |                       |
-| SPRING_DATASOURCE_USERNAME           | 数据源 username                                                      |                       |
-| SPRING_DATASOURCE_PASSWORD           | 数据源 password                                                      |                       |
-| JWT_SECRET                           | jwt secret                                                        |                       |
-| REPO_LOCAL_ADDITIONAL_PREFIX_MAPPING | 本地存储额外的前缀映射，格式为:前缀=本地存储路径,多个用逗号分隔，例如: /foo=/foo/bar,/bar=/bar/foo |                       |
+| 变量名                                  | 含义                                                                | 默认值                     |
+|--------------------------------------|-------------------------------------------------------------------|-------------------------|
+| HTTP_PROXY_ENABLE                    | http proxy switch                                                 | false                   |
+| HTTP_PROXY_TYPE                      | http proxy type                                                   | HTTP                    |
+| HTTP_PROXY_HOST                      | http proxy host                                                   |                         |
+| HTTP_PROXY_PORT                      | http proxy port                                                   |                         |
+| HTTP_PROXY_EXCLUDE                   | http proxy exclude                                                |                         |
+| HTTPS_PROXY_ENABLE                   | https proxy switch                                                | false                   |
+| HTTPS_PROXY_TYPE                     | https proxy type                                                  | HTTP                    |
+| HTTPS_PROXY_HOST                     | https proxy host                                                  |                         |
+| HTTPS_PROXY_PORT                     | https proxy port                                                  |                         |
+| HTTPS_PROXY_EXCLUDE                  | https proxy exclude                                               |                         |
+| REPO_EXTERNAL_URL                    | repo external url                                                 |                         |
+| REPO_TYPE                            | 存储类型                                                              | local                   |
+| REPO_LOCAL_PATH                      | 本地存储路径                                                            | $HOME/bdcm/local_repo   |
+| REPO_LOCAL_LISTEN                    | 本地存储监听地址                                                          | 0.0.0.0:9980 (optional) |
+| REPO_S3_ENDPOINT                     | s3存储endpoint                                                      |                         |
+| REPO_S3_BUCKET                       | s3存储bucket                                                        |                         |
+| REPO_S3_ACCESSKEY                    | s3存储accessKey                                                     |                         |
+| REPO_S3_SECRETKEY                    | s3存储secretKey                                                     |                         |
+| SERVER_PORT                          | 端口                                                                | 8080                    |
+| PROJECT_HOME                         | 数据目录                                                              | $HOME/bdcm              |
+| SPRING_DATABASE_TYPE                 | 可选 h2，mysql，sqlite，postgresql                                     | h2                      |
+| SPRING_DATASOURCE_URL                | 数据源 url                                                           |                         |
+| SPRING_DATASOURCE_USERNAME           | 数据源 username                                                      |                         |
+| SPRING_DATASOURCE_PASSWORD           | 数据源 password                                                      |                         |
+| JWT_SECRET                           | jwt secret                                                        |                         |
+| REPO_LOCAL_ADDITIONAL_PREFIX_MAPPING | 本地存储额外的前缀映射，格式为:前缀=本地存储路径,多个用逗号分隔，例如: /foo=/foo/bar,/bar=/bar/foo |                         |
 
 > 重要:
 

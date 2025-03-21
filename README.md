@@ -23,10 +23,12 @@ Supports environment variables
 | Variable Name                        | Meaning                                       | Default Value           |
 |--------------------------------------|-----------------------------------------------|-------------------------|
 | HTTP_PROXY_ENABLE                    | HTTP proxy switch                             | false                   |
+| HTTP_PROXY_TYPE                      | HTTP proxy type                               | HTTP                    |
 | HTTP_PROXY_HOST                      | HTTP proxy host                               |                         |
 | HTTP_PROXY_PORT                      | HTTP proxy port                               |                         |
 | HTTP_PROXY_EXCLUDE                   | HTTP proxy exclude                            |                         |
 | HTTPS_PROXY_ENABLE                   | HTTPS proxy switch                            | false                   |
+| HTTPS_PROXY_TYPE                     | HTTPS proxy type                              | HTTP                    |
 | HTTPS_PROXY_HOST                     | HTTPS proxy host                              |                         |
 | HTTPS_PROXY_PORT                     | HTTPS proxy port                              |                         |
 | HTTPS_PROXY_EXCLUDE                  | HTTPS proxy exclude                           |                         |

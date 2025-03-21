@@ -48,16 +48,18 @@ grab:
       value: "curl/7.88.1"
     - name: Connection
       value: keep-alive
-  http-proxy:
-    enable: ${HTTP_PROXY_ENABLE:false}
-    host: ${HTTP_PROXY_HOST:}
-    port: ${HTTP_PROXY_PORT:}
-    exclude: ${HTTP_PROXY_EXCLUDE:127.0.0.1,mirrors.ustc.edu.cn,localhost,192.168.66.0/24}
-  https-proxy:
-    enable: ${HTTPS_PROXY_ENABLE:${grab.httpProxy.enable:}}
-    host: ${HTTPS_PROXY_HOST:${grab.httpProxy.host:}}
-    port: ${HTTPS_PROXY_PORT:${grab.httpProxy.port:}}
-    exclude: ${HTTPS_PROXY_EXCLUDE:${grab.httpProxy.exclude:}}
+http-proxy:
+  type: HTTP # HTTP DIRECT SOCKS
+  enable: false
+  host:
+  port:
+  exclude: "127.0.0.1,mirrors.ustc.edu.cn,localhost,192.168.66.0/24"
+https-proxy:
+  type: HTTP # HTTP DIRECT SOCKS
+  enable: false
+  host:
+  port:
+  exclude: "127.0.0.1,mirrors.ustc.edu.cn,localhost,192.168.66.0/24"
 
 
 

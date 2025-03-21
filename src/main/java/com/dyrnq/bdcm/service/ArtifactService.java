@@ -2,10 +2,7 @@ package com.dyrnq.bdcm.service;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
-import com.dyrnq.bdcm.GrabProps;
-import com.dyrnq.bdcm.HomeDir;
-import com.dyrnq.bdcm.RepoProps;
-import com.dyrnq.bdcm.RepoType;
+import com.dyrnq.bdcm.*;
 import com.dyrnq.bdcm.dso.ArtJobLogMapper;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.dso.ArtifactMapper;
@@ -68,6 +65,16 @@ public class ArtifactService {
 
     @Inject
     GrabProps grabProps;
+
+    @Inject
+    HttpProxy httpProxy;
+
+    @Inject
+    HttpsProxy httpsProxy;
+
+    private HttpProxy getHttpProxy() {
+        return this.httpProxy;
+    }
 
     private RepoProps repoProps() {
         return repoProps;
@@ -148,13 +155,20 @@ public class ArtifactService {
             // 设置代理
             Proxy proxy = null;
 
-            if (grabProps.getHttpProxy().isEnable()) {
-                if (grabProps.getHttpProxy().getPort() == 0) {
+            if (getHttpProxy().isEnable()) {
+                if (getHttpProxy().getPort() == 0) {
                     logger.warn("port is 0, skip proxy");
                 } else {
-                    proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(grabProps.getHttpProxy().getHost(), grabProps.getHttpProxy().getPort()));
+                    Proxy.Type type = Proxy.Type.HTTP;
+                    if (StrUtil.isNotBlank(getHttpProxy().getType())) {
+                        try {
+                            type = Proxy.Type.valueOf(getHttpProxy().getType().toUpperCase());
+                        } catch (Exception ignore) {
+                        }
+                    }
+                    proxy = new Proxy(type, new InetSocketAddress(getHttpProxy().getHost(), getHttpProxy().getPort()));
                 }
-                String[] excludeHosts = StringUtils.splitByWholeSeparator(grabProps.getHttpProxy().getExclude(), ",");
+                String[] excludeHosts = StringUtils.splitByWholeSeparator(getHttpProxy().getExclude(), ",");
                 for (String excludeHost : excludeHosts) {
                     String host = "";
                     try {
@@ -505,7 +519,6 @@ public class ArtifactService {
                         .filename(localFilePath)
                         .build());
     }
-
 
 
     /**

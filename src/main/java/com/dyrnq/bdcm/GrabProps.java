@@ -14,8 +14,8 @@ import java.util.List;
 @Configuration
 @BindProps(prefix = "grab")
 public class GrabProps {
-    private HostAndPort httpProxy = new HostAndPort();
-    private HostAndPort httpsProxy = new HostAndPort();
+    //    private HostAndPort httpProxy = new HostAndPort();
+//    private HostAndPort httpsProxy = new HostAndPort();
     private ThreadPool threadPool = new ThreadPool();
     private List<KeyVal> httpHeaders;
     private int retry;
@@ -32,16 +32,16 @@ public class GrabProps {
         String value;
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    static
-    public class HostAndPort {
-        private boolean enable;
-        private String host;
-        private int port;
-        private String exclude;
-    }
+//    @Data
+//    @AllArgsConstructor
+//    @NoArgsConstructor
+//    static
+//    public class HostAndPort {
+//        private boolean enable;
+//        private String host;
+//        private int port;
+//        private String exclude;
+//    }
 
     @Data
     @AllArgsConstructor
