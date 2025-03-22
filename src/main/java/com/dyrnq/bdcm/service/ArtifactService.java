@@ -148,6 +148,17 @@ public class ArtifactService {
         return Tuple.tuple(proxy, proxyAuthenticator);
     }
 
+    protected void unlockArtifact(Long id, Tuple2<Long, String> tuple, int status) {
+        Artifact artifact = new Artifact();
+        artifact.setId(id);
+        artifact.setLock(0);
+        artifact.setFinalStatus(status);
+        if (tuple != null) {
+            artifact.setFileSize(tuple.v1);
+            artifact.setEtag(tuple.v2);
+        }
+        artifactMapper.updateById(artifact, false);
+    }
 
     // 单文件下载
     public String download(Long id, Long artJobId, int retryCount) {
@@ -214,6 +225,7 @@ public class ArtifactService {
                 job.setStatus(1);
                 job.setProgress("100%");
                 artJobMapper.updateById(job, false);
+                unlockArtifact(id, tuple, job.getStatus());
             } catch (Exception e) {
                 error(jobId, e);
 
@@ -222,22 +234,11 @@ public class ArtifactService {
                 if (retryCount < grabProps.getRetry()) {
                     download(id, jobId, retryCount);
                 } else {
-//                    job.setEndTime(new Date());
                     job.setStatus(2);
                     artJobMapper.updateById(job, false);
+                    unlockArtifact(id, tuple, job.getStatus());
                 }
             }
-
-//            // 补足下载结果与完成时间。
-//            artJobMapper.updateById(job, false);
-            // 更新任务信息表
-            artifact.setLock(0);
-            artifact.setFinalStatus(job.getStatus());
-            if (tuple != null) {
-                artifact.setFileSize(tuple.v1);
-                artifact.setEtag(tuple.v2);
-            }
-            artifactMapper.updateById(artifact, false);
             return "下载任务执行完毕";
         } else {
             log.info("该任务下载功能暂被占用，请稍候。id={}, url={}", id, artifact.getUrl());

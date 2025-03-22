@@ -50,7 +50,7 @@ public class ArtifactAutoDownloadJob implements Runnable {
                     .begin("_lock is null or _lock !=1")
                     .end()
                     .and()
-                    .begin("final_status is null or final_status !=1")
+                    .begin("final_status is null or ( final_status !=1 and final_status!=2 )")
                     .end()
                     .limit(0, 1);
         };

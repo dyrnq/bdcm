@@ -47,6 +47,20 @@ function addLog(d) {
     }
 }
 
+function add_finalStatus(d) {
+    if (typeof d !== 'undefined' && d !== null && typeof d.finalStatus !== 'undefined' && d.finalStatus!==null) {
+        if (d.finalStatus == 1) {
+            return '完成';
+        }else if(d.finalStatus == 2) {
+            return '异常';
+        }else {
+            return d.finalStatus;
+        }
+    }else{
+        return '';
+    }
+}
+
 
 layui.use(function(){
 
@@ -229,7 +243,7 @@ $('#addOver3').click(function(){
             , {field: 'url', title: 'url', width: 300, sort: true}
             , {field: 'autoJob', title: 'auto',width: 50, templet: "<div>{{d.autoJob === 1 ? 'yes' : ''}}</div>", }
             , {field: 'lock', title: 'lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>", width: 50 }
-            , {field: 'finalStatus', title: 'final', width: 80, templet: "<div>{{d.finalStatus === 1 ? 'success' : ''}}</div>" }
+            , {field: 'finalStatus', title: 'final', width: 80, templet: add_finalStatus}
             , {field: 'etag', title: 'etag'}
             , {field: 'fileSize', title: 'fileSize', width: 120 }
             , {field: 'currentJobId', title: 'log', width: 50, templet: addLog}
