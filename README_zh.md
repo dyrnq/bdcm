@@ -2,7 +2,7 @@
 
 ## 描述
 
-<img src="https://a.dyrnq.com/bdcm/images/logo.png" alt="bdcm" width="300" height="300">
+<img src="https://a.dyrnq.com/bdcm/images/logo.png" alt="bdcm" width="300" height="300"><br/>
 
 bdcm(binary distribution cache management)是一个二进制分发文件的缓存下载管理系统。灵感来源于<a target="_blank" href="https://github.com/DaoCloud/public-binary-files-mirror">DaoCloud/public-binary-files-mirror</a>。
 
@@ -16,22 +16,26 @@ bdcm(binary distribution cache management)是一个二进制分发文件的缓�
 
 ## 运行
 
-see [scripts/test-docker.sh](scripts/test-docker.sh)
+see [scripts/test-docker.sh](scripts/test-docker.sh) and [dyrnq/bdcm:latest](https://hub.docker.com/r/dyrnq/bdcm/tags)
 
 支持环境变量
 
 | 变量名                                  | 含义                                                                | 默认值                     |
 |--------------------------------------|-------------------------------------------------------------------|-------------------------|
-| HTTP_PROXY_ENABLE                    | http proxy switch                                                 | false                   |
-| HTTP_PROXY_TYPE                      | http proxy type                                                   | HTTP                    |
-| HTTP_PROXY_HOST                      | http proxy host                                                   |                         |
-| HTTP_PROXY_PORT                      | http proxy port                                                   |                         |
-| HTTP_PROXY_EXCLUDE                   | http proxy exclude                                                |                         |
-| HTTPS_PROXY_ENABLE                   | https proxy switch                                                | false                   |
-| HTTPS_PROXY_TYPE                     | https proxy type                                                  | HTTP                    |
-| HTTPS_PROXY_HOST                     | https proxy host                                                  |                         |
-| HTTPS_PROXY_PORT                     | https proxy port                                                  |                         |
-| HTTPS_PROXY_EXCLUDE                  | https proxy exclude                                               |                         |
+| HTTP_PROXY_ENABLE                    | HTTP proxy switch                                                 | false                   |
+| HTTP_PROXY_TYPE                      | HTTP proxy type                                                   | HTTP                    |
+| HTTP_PROXY_HOST                      | HTTP proxy host                                                   |                         |
+| HTTP_PROXY_PORT                      | HTTP proxy port                                                   |                         |
+| HTTP_PROXY_USERNAME                  | HTTP proxy username                                               |                         |
+| HTTP_PROXY_PASSWORD                  | HTTP proxy password                                               |                         |
+| HTTP_PROXY_EXCLUDE                   | HTTP proxy exclude                                                |                         |
+| HTTPS_PROXY_ENABLE                   | HTTPS proxy switch                                                | false                   |
+| HTTPS_PROXY_TYPE                     | HTTPS proxy type                                                  | HTTP                    |
+| HTTPS_PROXY_HOST                     | HTTPS proxy host                                                  |                         |
+| HTTPS_PROXY_PORT                     | HTTPS proxy port                                                  |                         |
+| HTTPS_PROXY_USERNAME                 | HTTPS proxy username                                              |                         |
+| HTTPS_PROXY_PASSWORD                 | HTTPS proxy password                                              |                         |
+| HTTPS_PROXY_EXCLUDE                  | HTTPS proxy exclude                                               |                         |
 | REPO_EXTERNAL_URL                    | repo external url                                                 |                         |
 | REPO_TYPE                            | 存储类型                                                              | local                   |
 | REPO_LOCAL_PATH                      | 本地存储路径                                                            | $HOME/bdcm/local_repo   |

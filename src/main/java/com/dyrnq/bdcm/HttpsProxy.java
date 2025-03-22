@@ -13,4 +13,6 @@ public class HttpsProxy {
     private String host;
     private int port;
     private String exclude;
+    private String username;
+    private String password;
 }

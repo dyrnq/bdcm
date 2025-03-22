@@ -2,7 +2,7 @@
 
 ## Description
 
-<img src="https://a.dyrnq.com/bdcm/images/logo.png" alt="bdcm" width="300" height="300">
+<img src="https://a.dyrnq.com/bdcm/images/logo.png" alt="bdcm" width="300" height="300"><br/>
 
 BDCM (Binary Distribution Cache Management) is a binary distribution file cache download management system. It was inspired by <a target="_blank" href="https://github.com/DaoCloud/public-binary-files-mirror">DaoCloud/public-binary-files-mirror</a>.
 
@@ -16,7 +16,7 @@ BDCM (Binary Distribution Cache Management) is a binary distribution file cache 
 
 ## Running
 
-see [scripts/test-docker.sh](scripts/test-docker.sh)
+see [scripts/test-docker.sh](scripts/test-docker.sh) and [dyrnq/bdcm:latest](https://hub.docker.com/r/dyrnq/bdcm/tags)
 
 Supports environment variables
 
@@ -26,11 +26,15 @@ Supports environment variables
 | HTTP_PROXY_TYPE                      | HTTP proxy type                               | HTTP                    |
 | HTTP_PROXY_HOST                      | HTTP proxy host                               |                         |
 | HTTP_PROXY_PORT                      | HTTP proxy port                               |                         |
+| HTTP_PROXY_USERNAME                  | HTTP proxy username                           |                         |
+| HTTP_PROXY_PASSWORD                  | HTTP proxy password                           |                         |
 | HTTP_PROXY_EXCLUDE                   | HTTP proxy exclude                            |                         |
 | HTTPS_PROXY_ENABLE                   | HTTPS proxy switch                            | false                   |
 | HTTPS_PROXY_TYPE                     | HTTPS proxy type                              | HTTP                    |
 | HTTPS_PROXY_HOST                     | HTTPS proxy host                              |                         |
 | HTTPS_PROXY_PORT                     | HTTPS proxy port                              |                         |
+| HTTPS_PROXY_USERNAME                 | HTTPS proxy username                          |                         |
+| HTTPS_PROXY_PASSWORD                 | HTTPS proxy password                          |                         |
 | HTTPS_PROXY_EXCLUDE                  | HTTPS proxy exclude                           |                         |
 | REPO_EXTERNAL_URL                    | Repository external URL                       |                         |
 | REPO_TYPE                            | Storage type                                  | local                   |

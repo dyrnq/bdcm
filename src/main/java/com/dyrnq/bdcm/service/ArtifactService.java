@@ -14,6 +14,7 @@ import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -99,6 +100,55 @@ public class ArtifactService {
     }
 
 
+    protected Tuple2<Proxy, okhttp3.Authenticator> buildProxy(String fileURL) {
+        Proxy proxy = null;
+        okhttp3.Authenticator proxyAuthenticator = null;
+        if (getHttpProxy().isEnable()) {
+            if (getHttpProxy().getPort() == 0) {
+                logger.warn("port is 0, skip proxy");
+            } else {
+                Proxy.Type type = Proxy.Type.HTTP;
+                if (StrUtil.isNotBlank(getHttpProxy().getType())) {
+                    try {
+                        type = Proxy.Type.valueOf(getHttpProxy().getType().toUpperCase());
+                    } catch (Exception ignore) {
+                    }
+                }
+                proxy = new Proxy(type, new InetSocketAddress(getHttpProxy().getHost(), getHttpProxy().getPort()));
+            }
+            String[] excludeHosts = StringUtils.splitByWholeSeparator(getHttpProxy().getExclude(), ",");
+            for (String excludeHost : excludeHosts) {
+                String host = "";
+                try {
+                    URL url = new URL(fileURL);
+                    host = url.getHost();
+                    if (host.contains(excludeHost)) {
+                        proxy = null;
+                        break;
+                    }
+                } catch (Exception e) {
+                    proxy = null;
+                    break;
+                }
+
+            }
+            String username = getHttpProxy().getUsername();
+            String password = getHttpProxy().getPassword();
+
+            if (StrUtil.isNotBlank(username)) {
+                proxyAuthenticator = (route, response) -> {
+                    String credential = Credentials.basic(username, password);
+                    return response.request().newBuilder()
+                            .header("Proxy-Authorization", credential)
+                            .build();
+                };
+            }
+
+        }
+        return Tuple.tuple(proxy, proxyAuthenticator);
+    }
+
+
     // 单文件下载
     public String download(Long id, Long artJobId, int retryCount) {
         // 根据id获取URL
@@ -153,42 +203,13 @@ public class ArtifactService {
                 saveFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
             }
             // 设置代理
-            Proxy proxy = null;
 
-            if (getHttpProxy().isEnable()) {
-                if (getHttpProxy().getPort() == 0) {
-                    logger.warn("port is 0, skip proxy");
-                } else {
-                    Proxy.Type type = Proxy.Type.HTTP;
-                    if (StrUtil.isNotBlank(getHttpProxy().getType())) {
-                        try {
-                            type = Proxy.Type.valueOf(getHttpProxy().getType().toUpperCase());
-                        } catch (Exception ignore) {
-                        }
-                    }
-                    proxy = new Proxy(type, new InetSocketAddress(getHttpProxy().getHost(), getHttpProxy().getPort()));
-                }
-                String[] excludeHosts = StringUtils.splitByWholeSeparator(getHttpProxy().getExclude(), ",");
-                for (String excludeHost : excludeHosts) {
-                    String host = "";
-                    try {
-                        URL url = new URL(fileURL);
-                        host = url.getHost();
-                        if (host.contains(excludeHost)) {
-                            proxy = null;
-                            break;
-                        }
-                    } catch (Exception e) {
-                        proxy = null;
-                        break;
-                    }
-
-                }
-
-            }
             Tuple2<Long, String> tuple = null;
+            Tuple2<Proxy, okhttp3.Authenticator> proxyTuple = buildProxy(fileURL);
+            Proxy proxy = proxyTuple.v1;
+            okhttp3.Authenticator proxyAuthenticator = proxyTuple.v2;
             try {
-                tuple = downloadFileWithResume(fileURL, saveFilePath, proxy, jobId, artifact.getEtag());
+                tuple = downloadFileWithResume(fileURL, saveFilePath, proxy, proxyAuthenticator, jobId, artifact.getEtag());
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
@@ -224,7 +245,8 @@ public class ArtifactService {
         }
     }
 
-    public Tuple2<Long, String> downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, Long jobId, String eTagPersistence) throws Exception {
+
+    public Tuple2<Long, String> downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, okhttp3.Authenticator proxyAuthenticator, Long jobId, String eTagPersistence) throws Exception {
         File file = new File(saveFilePath);
         String rawUrl = fileURL.split("//")[1];
 
@@ -235,7 +257,7 @@ public class ArtifactService {
         Tuple2<Long, String> tuple = null;
 
         try {
-            tuple = getRemoteFileSize(fileURL, proxy);
+            tuple = getRemoteFileSize(fileURL, proxy, proxyAuthenticator);
         } catch (Exception ignore) {
 
         }
@@ -287,7 +309,7 @@ public class ArtifactService {
             info(jobId, "jobId={}, 不使用代理下载", jobId);
         }
         // 创建 OkHttpClient
-        OkHttpClient client = createOkHttpClient(proxy);
+        OkHttpClient client = createOkHttpClient(proxy, proxyAuthenticator);
 
         // 创建请求
         Request request = createRequest(fileURL, existingFileSize);
@@ -369,10 +391,17 @@ public class ArtifactService {
         return tuple;
     }
 
+    private OkHttpClient createOkHttpClient() {
+        return createOkHttpClient(null, null);
+    }
+
+    private OkHttpClient createOkHttpClient(Proxy proxy) {
+        return createOkHttpClient(proxy, null);
+    }
     /**
      * 创建 OkHttpClient
      */
-    private OkHttpClient createOkHttpClient(Proxy proxy) {
+    private OkHttpClient createOkHttpClient(Proxy proxy, okhttp3.Authenticator proxyAuthenticator) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .followRedirects(true)
                 .followSslRedirects(true)
@@ -381,7 +410,11 @@ public class ArtifactService {
 
         if (proxy != null) {
             builder.proxy(proxy); // 设置代理
+            if (proxyAuthenticator != null) {
+                builder.proxyAuthenticator(proxyAuthenticator);
+            }
         }
+
 
         return builder.build();
     }
@@ -406,12 +439,12 @@ public class ArtifactService {
     /**
      * 获取远程文件的大小
      */
-    private Tuple2<Long, String> getRemoteFileSize(String fileURL, Proxy proxy) throws IOException {
+    private Tuple2<Long, String> getRemoteFileSize(String fileURL, Proxy proxy, okhttp3.Authenticator proxyAuthenticator) throws IOException {
         Tuple2<Long, String> tuple2 = null;
         long contentLength = -1;
         String eTag = "";
 
-        OkHttpClient client = createOkHttpClient(proxy);
+        OkHttpClient client = createOkHttpClient(proxy, proxyAuthenticator);
         Request request = new Request.Builder()
                 .url(fileURL)
                 .addHeader("User-Agent", "curl/7.88.1")
