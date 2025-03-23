@@ -215,6 +215,9 @@ public class ArtifactController extends ApiController {
             int success = 0;
             int skip = 0;
             for (String str : list) {
+                if (StringUtils.isBlank(str)) {
+                    continue;
+                }
                 String[] k = StringUtils.split(str, ",");
                 Artifact artifact = new Artifact();
                 if (k.length > 2) {
