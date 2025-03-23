@@ -9,7 +9,6 @@ import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.model.ArtJob;
 import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.service.ArtJobService;
-import com.dyrnq.bdcm.service.ThreadPoolUtils;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
 import org.noear.solon.annotation.Controller;
@@ -59,6 +58,9 @@ public class ArtJobController extends ApiController {
         try {
             for (long i : id) {
                 artJobMapper.deleteById(i);
+                artJobLogMapper.delete(mapperWhereQ -> {
+                    mapperWhereQ.whereEq("art_job_id", i);
+                });
             }
             return Result.succeed("ok");
         } catch (Exception e) {
@@ -77,8 +79,9 @@ public class ArtJobController extends ApiController {
             return Result.failure(e.getMessage());
         }
     }
+
     @Mapping("log/{id}")
-    public Result log(Context ctx, @Path("id")  long id) {
+    public Result log(Context ctx, @Path("id") long id) {
         try {
             Act1<MapperWhereQ> condition = mapperWhereQ -> {
                 mapperWhereQ.whereEq("art_job_id", id);
