@@ -32,25 +32,15 @@
     <parent>
         <groupId>org.noear</groupId>
         <artifactId>solon-parent</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.2</version>
     </parent>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.noear</groupId>
             <artifactId>solon-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.noear</groupId>
-                    <artifactId>solon-boot-smarthttp</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.noear</groupId>
-            <artifactId>solon-boot-jlhttp</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.noear</groupId>
             <artifactId>solon-view-freemarker</artifactId>
