@@ -1,5 +1,6 @@
 package com.dyrnq.bdcm.service;
 
+import cn.hutool.core.net.URLDecoder;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.*;
@@ -33,6 +34,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -160,6 +162,16 @@ public class ArtifactService {
         artifactMapper.updateById(artifact, false);
     }
 
+    private String getPathFromURL(String fileURL) {
+        String fileURLRemoved = null;
+        if (StringUtils.contains(fileURL, "//")) {
+            fileURLRemoved = fileURL.split("//")[1];
+        } else {
+            fileURLRemoved = fileURL;
+        }
+        return URLDecoder.decode(fileURLRemoved, Charset.defaultCharset());
+    }
+
     // 单文件下载
     public String download(Long id, Long artJobId, int retryCount) {
         // 根据id获取URL
@@ -205,7 +217,7 @@ public class ArtifactService {
             artifactMapper.updateById(artifact, false);
 
             String fileURL = artifact.getUrl();
-            String rawUrl = fileURL.split("//")[1];
+            String rawUrl = getPathFromURL(fileURL);
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
             if (repoProps.getType().equals(RepoType.LOCAL)) {
@@ -249,7 +261,7 @@ public class ArtifactService {
 
     public Tuple2<Long, String> downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, okhttp3.Authenticator proxyAuthenticator, Long jobId, String eTagPersistence) throws Exception {
         File file = new File(saveFilePath);
-        String rawUrl = fileURL.split("//")[1];
+        String rawUrl = getPathFromURL(fileURL);
 
         long existingFileSize = 0;
 
@@ -377,7 +389,7 @@ public class ArtifactService {
 
                 if (repoProps.getType().equals(RepoType.S3)) {
                     // 上传到S3
-                    uploadObjectS3(saveFilePath, fileURL.split("//")[1]);
+                    uploadObjectS3(saveFilePath, rawUrl);
                 }
 
                 info(jobId, "jobId={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", jobId, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
