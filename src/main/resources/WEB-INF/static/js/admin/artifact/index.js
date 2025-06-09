@@ -223,7 +223,8 @@ $('#addOver3').click(function(){
     //执行一个 table 实例
     table.render({
         elem: '#demo'
-        , height: 620
+        , height: 'full-30'
+        , even: true
         , url: ctx + '/api/artifact' //数据接口
         , title: '用户表'
         , page: true //开启分页
