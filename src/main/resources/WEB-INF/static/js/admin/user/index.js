@@ -63,10 +63,10 @@ $('#change').click(function () {
     }
 });
 
-var default_limt = localStorage.getItem('pageLimit');
+var default_limit = localStorage.getItem('pageLimit');
 
-if ('' == default_limt || null == default_limt || undefined == default_limt) {
-    default_limt = cfg.pageLimit;
+if ('' == default_limit || null == default_limit || undefined == default_limit) {
+    default_limit = cfg.pageLimit;
 }
 
 $('#add').click(function(){
@@ -128,7 +128,7 @@ $('#addOver').click(function(){
         ,url: ctx + '/api/user' //数据接口
         ,title: '用户表'
         ,page: true //开启分页
-        , limit: default_limt
+        , limit: default_limit
         , limits: cfg.pageLimits
         ,toolbar: '#toolbarDemo' //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
         , defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
