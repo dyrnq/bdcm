@@ -181,38 +181,38 @@ public class DataSourceEmbed {
             ds = new HikariDataSource(dbConfig);
             migrationPath = "classpath:db/migration/postgresql";
         }
-        boolean flaywaySkipMysql5 = false;
-        //判断mysql版本，如果是5.多版本则跳过flayway
-        Connection conn = null;
-        try {
-            conn = ds.getConnection();
-            DatabaseMetaData meta = conn.getMetaData();
-            if (ReUtil.isMatch("(?i).*mysql.*", meta.getDriverName()) && ReUtil.isMatch("^(?i)5\\..*", meta.getDatabaseProductVersion())) {
-                flaywaySkipMysql5 = true;
-            }
-            if (meta instanceof DatabaseMetaData) {
-
-            }
-        } catch (SQLException e) {
-
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                }
-            }
-
-        }
-
-        if (!flaywaySkipMysql5) {
+//        boolean flaywaySkipMysql5 = false;
+//        //判断mysql版本，如果是5.多版本则跳过flayway
+//        Connection conn = null;
+//        try {
+//            conn = ds.getConnection();
+//            DatabaseMetaData meta = conn.getMetaData();
+//            if (ReUtil.isMatch("(?i).*mysql.*", meta.getDriverName()) && ReUtil.isMatch("^(?i)5\\..*", meta.getDatabaseProductVersion())) {
+//                flaywaySkipMysql5 = true;
+//            }
+//            if (meta instanceof DatabaseMetaData) {
+//
+//            }
+//        } catch (SQLException e) {
+//
+//        } finally {
+//            if (conn != null) {
+//                try {
+//                    conn.close();
+//                } catch (SQLException e) {
+//                }
+//            }
+//
+//        }
+//
+//        if (!flaywaySkipMysql5) {
             Flyway flyway = Flyway.configure()
                     .locations(migrationPath)
                     .baselineOnMigrate(true)
                     .cleanDisabled(true)
                     .dataSource(ds.getJdbcUrl(), ds.getUsername(), ds.getPassword()).load();
             flyway.migrate();
-        }
+//        }
 
         return ds;
     }
