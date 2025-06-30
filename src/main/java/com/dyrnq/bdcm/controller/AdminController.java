@@ -50,9 +50,9 @@ public class AdminController extends BaseController {
         return model;
     }
 
-    @Mapping("route")
-    public Object route() {
-        ModelAndView model = new ModelAndView("admin/route.html");
+    @Mapping("maven")
+    public Object maven() {
+        ModelAndView model = new ModelAndView("admin/maven.html");
         return model;
     }
 
