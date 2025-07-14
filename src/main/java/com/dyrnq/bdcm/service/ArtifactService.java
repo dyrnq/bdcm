@@ -21,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 import org.noear.solon.annotation.Component;
@@ -159,12 +160,12 @@ public class ArtifactService {
             artifact.setFileSize(tuple.v1);
             artifact.setEtag(tuple.v2);
         }
-        artifactMapper.updateById(artifact, false);
+        artifactMapper.updateById(artifact, true);
     }
 
     private String getPathFromURL(String fileURL) {
         String fileURLRemoved = null;
-        if (StringUtils.contains(fileURL, "//")) {
+        if (Strings.CS.contains(fileURL, "//")) {
             fileURLRemoved = fileURL.split("//")[1];
         } else {
             fileURLRemoved = fileURL;
@@ -214,7 +215,7 @@ public class ArtifactService {
             artifact.setLock(1);
             artifact.setBeginLock(new Date());
             artifact.setCurrentJobId(jobId);
-            artifactMapper.updateById(artifact, false);
+            artifactMapper.updateById(artifact, true);
 
             String fileURL = artifact.getUrl();
             String rawUrl = getPathFromURL(fileURL);
@@ -236,7 +237,7 @@ public class ArtifactService {
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
-                artJobMapper.updateById(job, false);
+                artJobMapper.updateById(job, true);
                 unlockArtifact(id, tuple, job.getStatus());
             } catch (Exception e) {
                 error(jobId, e);
@@ -247,7 +248,7 @@ public class ArtifactService {
                     download(id, jobId, retryCount);
                 } else {
                     job.setStatus(2);
-                    artJobMapper.updateById(job, false);
+                    artJobMapper.updateById(job, true);
                     unlockArtifact(id, tuple, job.getStatus());
                 }
             }
@@ -374,7 +375,7 @@ public class ArtifactService {
                         String progressStr = String.format("%.2f", progress);
                         artJob.setProgress(progressStr + "%");
                         artJob.setId(jobId);
-                        artJobMapper.updateById(artJob, false);
+                        artJobMapper.updateById(artJob, true);
                     }
                 }
                 boolean deleted = false;
