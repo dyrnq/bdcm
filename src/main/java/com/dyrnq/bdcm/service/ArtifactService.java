@@ -291,7 +291,7 @@ public class ArtifactService {
             } else {
                 info(jobId, "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag);
             }
-            if(StringUtils.isNoneBlank(eTagPersistence)) {
+            if(StringUtils.isNotBlank(eTagPersistence)) {
                 if (!Strings.CI.equals(eTag, eTagPersistence)) {
                     existingFileSize = 0;
                     info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
