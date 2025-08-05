@@ -15,10 +15,7 @@ import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -38,6 +35,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -293,10 +291,11 @@ public class ArtifactService {
             } else {
                 info(jobId, "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag);
             }
-
-            if (!StringUtils.equalsIgnoreCase(eTag, eTagPersistence)) {
-                existingFileSize = 0;
-                info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
+            if(StringUtils.isNoneBlank(eTagPersistence)) {
+                if (!Strings.CI.equals(eTag, eTagPersistence)) {
+                    existingFileSize = 0;
+                    info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
+                }
             }
         }
 
@@ -418,6 +417,7 @@ public class ArtifactService {
     private OkHttpClient createOkHttpClient(Proxy proxy, okhttp3.Authenticator proxyAuthenticator) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .followRedirects(true)
+//                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .followSslRedirects(true)
                 .connectTimeout(grabProps.getConnectTimeout(), TimeUnit.MILLISECONDS) // 连接超时
                 .readTimeout(grabProps.getReadTimeout(), TimeUnit.MILLISECONDS); // 读取超时
