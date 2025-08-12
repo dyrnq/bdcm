@@ -58,6 +58,9 @@ input[name='param']{
 
 
 
+                    <hr class="layui-border-orange" style="border-color:rgba(255, 183, 0, 0)  !important">
+
+
                     <div class="layui-col-md2"><div class="grid-demo">
                         <div class="layui-input-group">
                             <div class="layui-input-split layui-input-prefix">auto</div>
@@ -79,7 +82,18 @@ input[name='param']{
                             </select>
                         </div>
                     </div></div>
+                    <div class="layui-col-md2"><div class="grid-demo">
+                        <div class="layui-input-group">
+                            <div class="layui-input-split layui-input-prefix">finalStatus</div>
+                            <select name="finalStatus">
+                                <option value=""></option>
+                                <option value="1">成功</option>
+                                <option value="2">异常</option>
+                            </select>
+                        </div>
+                    </div></div>
 
+                    <hr class="layui-border-orange" style="border-color:rgba(255, 183, 0, 0)  !important">
                     <!--                    <div class="layui-col-md2"><div class="grid-demo">-->
                     <!--                        <div class="layui-input-group">-->
                     <!--                            <div class="layui-input-split layui-input-prefix">label</div>-->
@@ -89,7 +103,7 @@ input[name='param']{
 
 
 
-                    <div class="layui-col-md2"><div class="grid-demo">
+                    <div class="layui-col-md2" style="margin-top:10px;margin-bottom:10px;"><div class="grid-demo">
                         <div class="layui-btn-container layui-col-xs12">
 
                             <button class="layui-btn layui-btn-sm" lay-submit lay-filter="demo-table-search">${i18n.get("commonStr.search")}</button>

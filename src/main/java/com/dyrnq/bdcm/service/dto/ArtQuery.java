@@ -9,4 +9,5 @@ public class ArtQuery {
     Long artId;
     Integer artAutoJob;
     Integer artLock;
+    Integer finalStatus;
 }
