@@ -13,7 +13,7 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
-import org.noear.snack.ONode;
+import org.noear.snack4.ONode;
 import org.noear.solon.Solon;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
@@ -104,11 +104,11 @@ public class WebApp {
             if (Solon.cfg().isDebugMode()) {
                 //执行后打印下sql
                 WoodConfig.onExecuteAft(cmd -> {
-                    System.out.println(cmd.text + "\r\n" + ONode.stringify(cmd.paramMap()));
+                    System.out.println(cmd.text + "\r\n" + ONode.serialize(cmd.paramMap()));
                 });
 
                 WoodConfig.onException((cmd, err) -> {
-                    System.out.println(cmd.text + "\r\n" + ONode.stringify(cmd.paramMap()));
+                    System.out.println(cmd.text + "\r\n" + ONode.serialize(cmd.paramMap()));
                 });
             }
 
