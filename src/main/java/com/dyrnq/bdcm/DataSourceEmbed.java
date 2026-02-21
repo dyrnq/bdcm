@@ -20,9 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 @Configuration
 public class DataSourceEmbed {
@@ -206,12 +203,12 @@ public class DataSourceEmbed {
 //        }
 //
 //        if (!flaywaySkipMysql5) {
-            Flyway flyway = Flyway.configure()
-                    .locations(migrationPath)
-                    .baselineOnMigrate(true)
-                    .cleanDisabled(true)
-                    .dataSource(ds.getJdbcUrl(), ds.getUsername(), ds.getPassword()).load();
-            flyway.migrate();
+        Flyway flyway = Flyway.configure()
+                .locations(migrationPath)
+                .baselineOnMigrate(true)
+                .cleanDisabled(true)
+                .dataSource(ds.getJdbcUrl(), ds.getUsername(), ds.getPassword()).load();
+        flyway.migrate();
 //        }
 
         return ds;

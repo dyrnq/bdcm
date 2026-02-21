@@ -12,7 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Configuration
-@BindProps(prefix="repo")
+@BindProps(prefix = "repo")
 public class RepoProps implements Serializable {
     private String type;
     private String externalUrl;
@@ -29,6 +29,7 @@ public class RepoProps implements Serializable {
         private String secretKey;
         private String bucket;
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

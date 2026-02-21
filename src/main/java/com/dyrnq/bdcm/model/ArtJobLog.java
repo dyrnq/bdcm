@@ -5,8 +5,6 @@ import org.noear.wood.annotation.Column;
 import org.noear.wood.annotation.PrimaryKey;
 import org.noear.wood.annotation.Table;
 
-import java.util.Date;
-
 @Table("art_job_log")
 @Data
 public class ArtJobLog {

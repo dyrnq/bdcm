@@ -67,25 +67,30 @@ public class ThreadPoolUtils {
     public int getCorePoolSize() {
         return ((ThreadPoolExecutor) executorService).getCorePoolSize();
     }
+
     public int getMaxPoolSize() {
         return ((ThreadPoolExecutor) executorService).getMaximumPoolSize();
     }
+
     public int getActiveCount() {
         return ((ThreadPoolExecutor) executorService).getActiveCount();
     }
+
     public long getTaskCount() {
         return ((ThreadPoolExecutor) executorService).getTaskCount();
     }
+
     public long getCompletedTaskCount() {
         return ((ThreadPoolExecutor) executorService).getCompletedTaskCount();
     }
+
     public int getQueueSize() {
         return ((ThreadPoolExecutor) executorService).getQueue().size();
     }
+
     public int getPoolSize() {
         return ((ThreadPoolExecutor) executorService).getPoolSize();
     }
-
 
 
     // 提交任务（Runnable）

@@ -84,7 +84,7 @@ public class ArtJobService {
         }
 
 
-        IPage<ArtJobView> page = tableQuery.paging(start,size).selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
+        IPage<ArtJobView> page = tableQuery.paging(start, size).selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
         return page;
 
     }

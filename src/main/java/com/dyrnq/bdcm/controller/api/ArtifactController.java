@@ -97,9 +97,9 @@ public class ArtifactController extends ApiController {
                 return Result.failure(String.format("%s已存在!请不要重复增加!", artifact.getUrl()));
             }
 
-            Long id =IDUtils.getLongID();
+            Long id = IDUtils.getLongID();
 //            logger.info("id={}",id);
-            if(ObjectUtil.isNull(artifact.getId())){
+            if (ObjectUtil.isNull(artifact.getId())) {
                 artifact.setId(id);
             }
             artifact.setUpdateTime(new Date());

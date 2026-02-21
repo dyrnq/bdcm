@@ -15,7 +15,10 @@ import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -35,7 +38,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -291,7 +293,7 @@ public class ArtifactService {
             } else {
                 info(jobId, "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag);
             }
-            if(StringUtils.isNotBlank(eTagPersistence)) {
+            if (StringUtils.isNotBlank(eTagPersistence)) {
                 if (!Strings.CI.equals(eTag, eTagPersistence)) {
                     existingFileSize = 0;
                     info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
@@ -411,6 +413,7 @@ public class ArtifactService {
     private OkHttpClient createOkHttpClient(Proxy proxy) {
         return createOkHttpClient(proxy, null);
     }
+
     /**
      * 创建 OkHttpClient
      */

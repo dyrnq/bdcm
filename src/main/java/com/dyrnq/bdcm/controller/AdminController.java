@@ -31,6 +31,7 @@ public class AdminController extends BaseController {
         model.put("externalUrl", repoConfig.guessExternalUrl());
         return model;
     }
+
     @Mapping("artJob")
     public Object artJob() {
         ModelAndView model = new ModelAndView("admin/artJob.html");
@@ -57,14 +58,11 @@ public class AdminController extends BaseController {
     }
 
 
-
     @Mapping("login")
     public Object login() {
         ModelAndView model = new ModelAndView("admin/login.html");
         return model;
     }
-
-
 
 
     @Mapping("")

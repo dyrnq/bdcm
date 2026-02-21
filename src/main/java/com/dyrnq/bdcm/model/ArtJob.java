@@ -18,7 +18,7 @@ public class ArtJob {
     private Long artId;
 
     @Column("user_id")
-    private String  userId;
+    private String userId;
 
     @Column("status")
     private Integer status;
@@ -30,5 +30,5 @@ public class ArtJob {
     private Date endTime;
 
     @Column("progress")
-    private String  progress;
+    private String progress;
 }
