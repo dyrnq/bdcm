@@ -184,7 +184,7 @@ fun_install_docker() {
 
     curl -fsSL https://ghfast.top/https://github.com/dyrnq/install-docker/raw/main/install-docker.sh | bash -s docker \
     --mirror tencent \
-    --version 28.0.1 \
+    --version 28.3.2 \
     --systemd-mirror https://ghfast.top \
     --with-compose \
     --compose-version 2.33.1 \
@@ -212,7 +212,19 @@ fun_misc() {
     echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
 }
 
+fun_needrestart(){
+if grep ID=ubuntu < /etc/os-release ; then
+if [ -e /etc/needrestart/conf.d/ ]; then
+cat > /etc/needrestart/conf.d/silence_kernel.conf <<'EOF'
+$nrconf{kernelhints} = 0;
+$nrconf{restart} = 'l';
+EOF
+cat /etc/needrestart/conf.d/silence_kernel.conf
+fi
+fi
+}
 
+fun_needrestart
 fun_chmirror
 fun_system
 fun_install_docker
