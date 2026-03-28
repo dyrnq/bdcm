@@ -13,12 +13,14 @@ import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
 import com.dyrnq.bdcm.service.dto.ArtQuery;
 import com.dyrnq.utils.IDUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
 import org.noear.solon.core.handle.Context;
+import org.noear.solon.core.handle.DownloadedFile;
 import org.noear.solon.core.handle.Result;
 import org.noear.solon.validation.annotation.Numeric;
 import org.noear.solon.validation.annotation.Valid;
@@ -28,6 +30,8 @@ import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
@@ -260,5 +264,32 @@ public class ArtifactController extends ApiController {
             return Result.failure(e.getMessage());
         }
     }
+
+    @Mapping("export")
+    public void export(Context ctx) throws IOException {
+        long currentTimeMillis = System.currentTimeMillis();
+
+        StringBuffer sb = new StringBuffer();
+        List<Artifact> list = artifactMapper.selectList(c -> {
+        });
+
+        for (Artifact artifact : list) {
+
+            String name = artifact.getName();
+            String url = artifact.getUrl();
+            if (StringUtils.isBlank(name)) {
+                String fileNameWithExt = url.substring(url.lastIndexOf("/") + 1);
+                name = FilenameUtils.removeExtension(fileNameWithExt);
+            }
+
+            sb.append(name).append(",");
+            sb.append(artifact.getUrl()).append("\n");
+        }
+        byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        String fileName = "artifact-" + currentTimeMillis + ".txt";
+        DownloadedFile file = new DownloadedFile("application/octet-stream", bytes, fileName);
+        ctx.outputAsFile(file);
+    }
+
 }
 

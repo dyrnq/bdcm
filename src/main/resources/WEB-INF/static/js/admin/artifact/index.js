@@ -140,6 +140,11 @@ form.on('switch(demo-checkbox-filter)', function(data){
      return false; // 阻止默认 form 跳转
    });
 
+ form.on('submit(demo-table-export)', function(data){
+     window.open(ctx + '/api/artifact/export');
+     return false;
+   });
+
 $('#add').click(function(){
     cleanData(false);
     layer.open({
