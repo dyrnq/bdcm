@@ -58,7 +58,7 @@ see [scripts/test-docker.sh](scripts/test-docker.sh) and [dyrnq/bdcm:latest](htt
 使用以下命令获取并替换默认的jwt secret:
 
 ```bash
-docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -cp /app/bdcm.jar cli jwt"
+docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -jar /app/bdcm.jar cli jwt"
 ```
 
 

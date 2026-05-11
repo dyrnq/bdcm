@@ -58,7 +58,7 @@ Supports environment variables
 Change the default jwt secret key with the following command:
 
 ```bash
-docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -cp /app/bdcm.jar cli jwt"
+docker run -it --rm --entrypoint="" dyrnq/bdcm:latest bash -c "java -jar /app/bdcm.jar cli jwt"
 ```
 
 usage:

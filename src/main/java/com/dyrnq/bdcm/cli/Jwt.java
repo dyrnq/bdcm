@@ -1,4 +1,5 @@
-package cli;
+package com.dyrnq.bdcm.cli;
+
 
 
 import io.jsonwebtoken.Jwts;
