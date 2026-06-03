@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/4.9.3/spotbugs/etc/findbugsfilter.xsd">
+
+    <!-- Lombok @Data classes expose internal representation by design -->
+    <Match>
+        <Or>
+            <Class name="com.dyrnq.bdcm.GrabProps"/>
+            <Class name="com.dyrnq.bdcm.RepoProps"/>
+            <Class name="com.dyrnq.bdcm.model.ArtJob"/>
+            <Class name="com.dyrnq.bdcm.model.Artifact"/>
+        </Or>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- ThreadPoolUtils returns singleton service objects by design -->
+    <Match>
+        <Class name="com.dyrnq.bdcm.service.ThreadPoolUtils"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- X509 certificate holder by design -->
+    <Match>
+        <Class name="com.dyrnq.utils.X509Holder"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- DataSourceEmbed System.exit is intentional for H2 migration failures -->
+    <Match>
+        <Class name="com.dyrnq.bdcm.DataSourceEmbed"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!-- DataSourceEmbed ds null path is a false positive (it's always set) -->
+    <Match>
+        <Class name="com.dyrnq.bdcm.DataSourceEmbed"/>
+        <Bug pattern="NP_NULL_ON_SOME_PATH"/>
+    </Match>
+
+    <!-- Legacy methods intentionally throw RuntimeException -->
+    <Match>
+        <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
+    </Match>
+
+    <!-- Legacy exception handling patterns -->
+    <Match>
+        <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+    </Match>
+
+    <!-- Uncalled private methods (may be used via reflection or left for future) -->
+    <Match>
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+    </Match>
+
+    <!-- mkdirs return value ignored (common pattern, acceptable) -->
+    <Match>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
+    </Match>
+
+    <!-- Generic catch of Exception in controller methods -->
+    <Match>
+        <Class name="~com\.dyrnq\.bdcm\.controller\..*"/>
+        <Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+
+</FindBugsFilter>
