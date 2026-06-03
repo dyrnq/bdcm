@@ -381,6 +381,22 @@
                         <importOrder/>
                         <removeUnusedImports/>
                     </java>
+                    <formats>
+                        <format>
+                            <includes>
+                                <include>src/main/resources/WEB-INF/static/js/admin/**/*.js</include>
+                                <include>src/main/resources/WEB-INF/view/admin/**/*.html</include>
+                                <include>src/main/resources/WEB-INF/view/*.html</include>
+                                <include>src/main/resources/WEB-INF/static/css/admin/*.css</include>
+                            </includes>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                            <indent>
+                                <spaces>true</spaces>
+                                <spacesPerTab>2</spacesPerTab>
+                            </indent>
+                        </format>
+                    </formats>
                 </configuration>
                 <executions>
                     <execution>
