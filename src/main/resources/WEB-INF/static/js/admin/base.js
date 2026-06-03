@@ -352,4 +352,3 @@ function closeLoad() {
 function showHelp() {
     console.log("showHelp");
 }
-
