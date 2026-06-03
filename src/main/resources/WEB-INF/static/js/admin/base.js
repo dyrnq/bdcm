@@ -8,6 +8,12 @@ var laydate;
 var $ = layui.$;
 var jQuery = layui.$;
 
+// HTML escape utility
+function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 layui.$.ajaxSetup({
     complete: function(xhr,status) {
 //        console.log(xhr.status);
