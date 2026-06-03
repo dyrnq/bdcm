@@ -33,23 +33,101 @@ function cleanData(d){
 
 function addLink(d) {
     var addLink = d.id;
-    console.log(d)
-    console.log(typeof d.id)
-    console.log(externalUrl)
-    var link = d.url.split('://')[1];
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    let url  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+escAttr(externalUrl)+escAttr(link)+'" target="_blank">link</a>'
+    let copyBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="copyUrl(\'' + escAttr(d.url) + '\')">copy</button>'
 
-    return editBtn+'&nbsp;'+delBtn+'&nbsp;'+url;
+    return editBtn+'&nbsp;'+delBtn+'&nbsp;'+copyBtn;
+}
+
+function copyUrl(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+            layer.msg('已复制到剪贴板');
+        }).catch(function() {
+            layer.msg('复制失败');
+        });
+    } else {
+        // fallback for older browsers
+        var textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            layer.msg('已复制到剪贴板');
+        } catch (e) {
+            layer.msg('复制失败');
+        }
+        document.body.removeChild(textarea);
+    }
 }
 function addLog(d) {
-    if (typeof d !== 'undefined' && d !== null && typeof d.currentJobId !== 'undefined' && d.currentJobId!==null) {
-        let logBtn  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+ctx+'/api/artJob/log/'+d.currentJobId+'" target="_blank">log</a>'
-        return logBtn;
-    }else{
+    if (typeof d !== 'undefined' && d !== null && typeof d.currentJobId !== 'undefined' && d.currentJobId !== null) {
+        return '<button class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(' + d.currentJobId + ')">log</button>'
+    } else {
         return '';
     }
+}
+
+function viewLog(jobId) {
+    window._currentLogJobId = jobId;
+    var loadIdx = layer.load();
+    layui.jquery.ajax({
+        type: 'GET',
+        url: ctx + '/api/artJob/log/' + jobId,
+        dataType: 'json',
+        success: function(data) {
+            layer.close(loadIdx);
+            if (data.code == 200) {
+                var logs = data.data;
+                var html = '';
+                if (logs && logs.length > 0) {
+                    html += '<div style="margin-bottom:10px"><button class="layui-btn layui-btn-xs layui-btn-normal" onclick="downloadLog()"><i class="layui-icon layui-icon-download-circle"></i> 下载日志</button></div>';
+                    html += '<div id="logContent">';
+                    for (var i = 0; i < logs.length; i++) {
+                        html += '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(logs[i].log) + '</pre>';
+                    }
+                    html += '</div>';
+                } else {
+                    html = '<div style="text-align:center;padding:20px;color:#999">暂无日志</div>';
+                }
+                layer.open({
+                    type: 1,
+                    title: '日志 - Job #' + jobId,
+                    area: ['900px', '600px'],
+                    content: '<div style="padding:15px;max-height:550px;overflow:auto">' + html + '</div>',
+                    shadeClose: true,
+                    maxmin: true
+                });
+            } else {
+                layer.msg(data.description || '获取日志失败');
+            }
+        },
+        error: function() {
+            layer.close(loadIdx);
+            layer.msg('获取日志失败');
+        }
+    });
+}
+
+function downloadLog() {
+    var rawText = '';
+    var pres = document.querySelectorAll('#logContent pre');
+    for (var i = 0; i < pres.length; i++) {
+        rawText += pres[i].textContent + '\n';
+    }
+    if (!rawText) { layer.msg('无日志内容'); return; }
+    var blob = new Blob([rawText], { type: 'text/plain;charset=utf-8' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'log-job-' + (window._currentLogJobId || 'unknown') + '.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 function add_finalStatus(d) {
@@ -63,6 +141,18 @@ function add_finalStatus(d) {
         }
     }else{
         return '';
+    }
+}
+
+function formatFileSize(d) {
+    if (typeof d !== 'undefined' && d !== null && typeof d.fileSize !== 'undefined' && d.fileSize !== null) {
+        var size = d.fileSize;
+        if (size < 1024) return size + ' B';
+        if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+        if (size < 1024 * 1024 * 1024) return (size / (1024 * 1024)).toFixed(1) + ' MB';
+        return (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    } else {
+        return '-';
     }
 }
 
@@ -256,7 +346,7 @@ $('#addOver3').click(function(){
             , {field: 'lock', title: 'lock', templet: "<div>{{d.lock === 1 ? '锁' : ''}}</div>", width: 50 }
             , {field: 'finalStatus', title: 'final', width: 80, templet: add_finalStatus}
             , {field: 'etag', title: 'etag'}
-            , {field: 'fileSize', title: 'fileSize', width: 120 }
+            , {field: 'fileSize', title: 'fileSize', width: 120, templet: formatFileSize }
             , {field: 'currentJobId', title: 'log', width: 50, templet: addLog}
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
 
