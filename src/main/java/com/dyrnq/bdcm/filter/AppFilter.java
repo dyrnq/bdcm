@@ -29,6 +29,12 @@ public class AppFilter implements Filter {
     @Inject
     CfgExtractor cfgExtractor;
 
+    @Inject("${spring.database.type:}")
+    String dbType;
+
+    @Inject("${spring.datasource.url:}")
+    String dbUrl;
+
     static String getCtxStr(Context context) {
         String httpHost = context.header("X-Forwarded-Host");
         String realPort = context.header("X-Forwarded-Port");
@@ -57,6 +63,7 @@ public class AppFilter implements Filter {
         Map<String, String> cookName = new HashMap<>();
         cookName.put("token", cfgExtractor.tokenCookieName());
         cookName.put("instId", CookieName.NAME_INSTID);
+        ctx.attrSet("dbType", resolveDbLabel());
         ctx.attrSet("projectName", projectName);
         ctx.attrSet("cookName", JSONUtil.toJsonStr(cookName));
         ctx.attrSet("cfg", "{ \"pageLimit\":10, \"pageLimits\":[10,20,50,100,1000], \"aceMode\": \"yaml\" }");
@@ -77,5 +84,20 @@ public class AppFilter implements Filter {
             ctx.attrSet("langType", "简体中文");
         }
         chain.doFilter(ctx);
+    }
+
+    private String resolveDbLabel() {
+        // 优先从 datasource url 推断
+        if (StrUtil.isNotBlank(dbUrl)) {
+            if (dbUrl.startsWith("jdbc:h2:")) return "H2";
+            if (dbUrl.startsWith("jdbc:mysql:")) return "MySQL";
+            if (dbUrl.startsWith("jdbc:postgresql:") || dbUrl.startsWith("jdbc:pgsql:")) return "PostgreSQL";
+            if (dbUrl.startsWith("jdbc:sqlite:")) return "SQLite";
+            return dbUrl.split(":")[1]; // fallback: 取 jdbc:xxx 中间段
+        }
+        // 其次从 database.type 取值
+        if (StrUtil.isNotBlank(dbType)) return dbType;
+        // 默认
+        return "h2";
     }
 }
