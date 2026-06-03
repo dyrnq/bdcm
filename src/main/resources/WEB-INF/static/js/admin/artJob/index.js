@@ -27,27 +27,83 @@ function cleanData(d){
 }
 
 function addLink(d) {
-    var addLink = d.id;
-    console.log(d)
-    console.log(typeof d.id)
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    let logBtn  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+ctx+'/api/artJob/log/'+d.id+'" target="_blank">log</a>'
-    return delBtn+'&nbsp;'+logBtn;
+    let logBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(' + d.id + ')">log</button>'
+    return delBtn + '&nbsp;' + logBtn;
+}
+
+function viewLog(jobId) {
+    window._currentLogJobId = jobId;
+    var loadIdx = layer.load();
+    layui.jquery.ajax({
+        type: 'GET',
+        url: ctx + '/api/artJob/log/' + jobId,
+        dataType: 'json',
+        success: function(data) {
+            layer.close(loadIdx);
+            if (data.code == 200) {
+                var logs = data.data;
+                var html = '';
+                if (logs && logs.length > 0) {
+                    html += '<div style="margin-bottom:10px"><button class="layui-btn layui-btn-xs layui-btn-normal" onclick="downloadLog()"><i class="layui-icon layui-icon-download-circle"></i> 下载日志</button></div>';
+                    html += '<div id="logContent">';
+                    for (var i = 0; i < logs.length; i++) {
+                        html += '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(logs[i].log) + '</pre>';
+                    }
+                    html += '</div>';
+                } else {
+                    html = '<div style="text-align:center;padding:20px;color:#999">暂无日志</div>';
+                }
+                layer.open({
+                    type: 1,
+                    title: '日志 - Job #' + jobId,
+                    area: ['900px', '600px'],
+                    content: '<div style="padding:15px;max-height:550px;overflow:auto">' + html + '</div>',
+                    shadeClose: true,
+                    maxmin: true
+                });
+            } else {
+                layer.msg(data.description || '获取日志失败');
+            }
+        },
+        error: function() {
+            layer.close(loadIdx);
+            layer.msg('获取日志失败');
+        }
+    });
+}
+
+function downloadLog() {
+    var rawText = '';
+    var pres = document.querySelectorAll('#logContent pre');
+    for (var i = 0; i < pres.length; i++) {
+        rawText += pres[i].textContent + '\n';
+    }
+    if (!rawText) { layer.msg('无日志内容'); return; }
+    var blob = new Blob([rawText], { type: 'text/plain;charset=utf-8' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'log-job-' + (window._currentLogJobId || 'unknown') + '.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 function addStatus(d) {
-    if (typeof d !== 'undefined' && d !== null && typeof d.status !== 'undefined' && d.status!==null) {
+    if (typeof d !== 'undefined' && d !== null && typeof d.status !== 'undefined' && d.status !== null) {
         if (d.status == 1) {
             return '完成';
-        }else if(d.status == 0) {
-            return '下载中';
-        }else if(d.status == 2) {
+        } else if (d.status == 0) {
+            var prog = (typeof d.progress !== 'undefined' && d.progress !== null && d.progress !== '') ? ' ' + d.progress : '';
+            return '下载中' + prog;
+        } else if (d.status == 2) {
             return '异常';
-        }else {
+        } else {
             return d.status;
         }
-    }else{
+    } else {
         return '';
     }
 }
@@ -205,8 +261,7 @@ $('#addOver').click(function(){
             , {field: 'id', title: 'id', width: 200, sort: true, fixed: 'left', totalRowText: '合计：'}
             , {field: 'artName', title: 'name', width: 200}
             , {field: 'artUrl', title: 'url', width: 300, sort: true}
-            , {field: 'status', title: 'status', width: 80, templet: addStatus }
-            , {field: 'progress', title: 'progress',width: 100 }
+            , {field: 'status', title: 'status/progress', width: 160, templet: addStatus }
             , {field: 'beginTime', title: 'beginTime', sort: true, width: 300, templet: "<div>{{!d.beginTime?'-':layui.util.toDateString(d.beginTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'endTime', title: 'endTime', sort: true, width: 300, templet: "<div>{{!d.endTime?'-':layui.util.toDateString(d.endTime, 'yyyy-MM-dd HH:mm:ss') }}</div>" }
             , {field: 'upstream', title: 'operation', fixed: 'right', templet: addLink}
