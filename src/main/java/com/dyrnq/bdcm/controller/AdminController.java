@@ -1,6 +1,5 @@
 package com.dyrnq.bdcm.controller;
 
-
 import com.dyrnq.bdcm.CfgExtractor;
 import com.dyrnq.bdcm.RepoConfig;
 import org.noear.solon.Utils;
@@ -13,7 +12,6 @@ import org.noear.solon.i18n.annotation.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @Mapping("admin")
 @Controller
 @I18n
@@ -22,6 +20,7 @@ public class AdminController extends BaseController {
 
     @Inject
     CfgExtractor cfgExtractor;
+
     @Inject
     RepoConfig repoConfig;
 
@@ -37,7 +36,6 @@ public class AdminController extends BaseController {
         ModelAndView model = new ModelAndView("admin/artJob.html");
         return model;
     }
-
 
     @Mapping("user")
     public Object user() {
@@ -57,13 +55,11 @@ public class AdminController extends BaseController {
         return model;
     }
 
-
     @Mapping("login")
     public Object login() {
         ModelAndView model = new ModelAndView("admin/login.html");
         return model;
     }
-
 
     @Mapping("")
     public Object index(Context ctx) {
@@ -76,8 +72,5 @@ public class AdminController extends BaseController {
             ModelAndView model = new ModelAndView("admin/index-auth.html");
             return model;
         }
-
     }
-
-
 }

@@ -1,24 +1,23 @@
 package com.dyrnq.bdcm;
 
 import cn.hutool.core.util.StrUtil;
+import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 
-import java.util.concurrent.TimeUnit;
-
 public class OkHttpClientTest {
     public static void main(String[] args) throws Exception {
 
-        String[] urls = new String[]{
-                "https://mirrors.ustc.edu.cn/debian-cd/current/amd64/iso-dvd/debian-12.10.0-amd64-DVD-1.iso",
-                "https://mirrors.ustc.edu.cn/apache/ant/binaries/apache-ant-1.9.16-bin.tar.gz",
-                "https://mirrors.ustc.edu.cn/ubuntu-cloud-images/noble/current/noble-server-cloudimg-amd64.img",
-                "https://mirrors.huaweicloud.com/ubuntu-cloud-images/noble/20250304/noble-server-cloudimg-arm64.img",
-                "https://dl.min.io/client/mc/release/linux-amd64/mc",
-                "https://gitee.com/layui/layui/releases/download/v2.10.0/layui-v2.10.0.zip",
+        String[] urls = new String[] {
+            "https://mirrors.ustc.edu.cn/debian-cd/current/amd64/iso-dvd/debian-12.10.0-amd64-DVD-1.iso",
+            "https://mirrors.ustc.edu.cn/apache/ant/binaries/apache-ant-1.9.16-bin.tar.gz",
+            "https://mirrors.ustc.edu.cn/ubuntu-cloud-images/noble/current/noble-server-cloudimg-amd64.img",
+            "https://mirrors.huaweicloud.com/ubuntu-cloud-images/noble/20250304/noble-server-cloudimg-arm64.img",
+            "https://dl.min.io/client/mc/release/linux-amd64/mc",
+            "https://gitee.com/layui/layui/releases/download/v2.10.0/layui-v2.10.0.zip",
         };
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
@@ -53,7 +52,6 @@ public class OkHttpClientTest {
 
                     response = client.newCall(request).execute();
                     responseBody = response.body();
-
                 }
                 String eTag = response.header("ETag");
                 String contentLength = response.header("Content-Length");
@@ -68,6 +66,4 @@ public class OkHttpClientTest {
             }
         }
     }
-
 }
-

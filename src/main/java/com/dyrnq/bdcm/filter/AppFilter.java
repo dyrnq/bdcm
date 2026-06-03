@@ -5,6 +5,8 @@ import cn.hutool.json.JSONUtil;
 import com.dyrnq.bdcm.CfgExtractor;
 import com.dyrnq.bdcm.CookieName;
 import com.dyrnq.utils.VersionUtils;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.noear.solon.annotation.Component;
@@ -16,13 +18,11 @@ import org.noear.solon.i18n.I18nUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Component
 @Slf4j
 public class AppFilter implements Filter {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Inject("${solon.app.name}")
     String projectName;
 
@@ -66,7 +66,8 @@ public class AppFilter implements Filter {
         ctx.attrSet("jsrandom", VersionUtils.getVersion() + "." + System.currentTimeMillis());
         ctx.attrSet("cookieMap", ctx.cookieMap());
         try {
-            String ctxDisplayLanguage = I18nUtil.getLocaleResolver().getLocale(ctx).getDisplayLanguage();
+            String ctxDisplayLanguage =
+                    I18nUtil.getLocaleResolver().getLocale(ctx).getDisplayLanguage();
             if (Strings.CI.equals(ctxDisplayLanguage, "Chinese") || Strings.CI.equals(ctxDisplayLanguage, "中文")) {
                 ctx.attrSet("langType", "简体中文");
             } else {
@@ -77,5 +78,4 @@ public class AppFilter implements Filter {
         }
         chain.doFilter(ctx);
     }
-
 }

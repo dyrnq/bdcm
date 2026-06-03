@@ -1,6 +1,5 @@
 package com.dyrnq.bdcm.controller.api;
 
-
 import cn.hutool.core.util.PageUtil;
 import com.dyrnq.bdcm.controller.ApiController;
 import com.dyrnq.bdcm.controller.PageResult;
@@ -11,6 +10,8 @@ import com.dyrnq.bdcm.model.ArtJobLog;
 import com.dyrnq.bdcm.service.ArtJobService;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
+import java.util.List;
+import java.util.Map;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
@@ -24,21 +25,20 @@ import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-
 @Mapping("api/artJob")
 @Controller
 @Valid
 public class ArtJobController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtJobController.class);
+
     @Inject
     ArtJobMapper artJobMapper;
+
     @Inject
     ArtJobLogMapper artJobLogMapper;
+
     @Inject
     ArtJobService artJobService;
-
 
     @Mapping("")
     public PageResult query(Context ctx, int page, int limit, ArtJobQuery query) {
@@ -51,7 +51,6 @@ public class ArtJobController extends ApiController {
             return PageResult.failure(e.getMessage());
         }
     }
-
 
     @Mapping("del")
     public Result del(Context ctx, long... id) {
@@ -100,7 +99,10 @@ public class ArtJobController extends ApiController {
             Map<String, Long> report = artJobService.report();
             StringBuilder html = new StringBuilder();
             for (Map.Entry<String, Long> entry : report.entrySet()) {
-                html.append(entry.getKey()).append(": <b>").append(entry.getValue()).append("</b> ");
+                html.append(entry.getKey())
+                        .append(": <b>")
+                        .append(entry.getValue())
+                        .append("</b> ");
             }
             return Result.succeed(html.toString());
         } catch (Exception e) {
@@ -115,7 +117,10 @@ public class ArtJobController extends ApiController {
             Map<String, Object> report = artJobService.threadPool();
             StringBuilder html = new StringBuilder();
             for (Map.Entry<String, Object> entry : report.entrySet()) {
-                html.append(entry.getKey()).append(": <b>").append(entry.getValue()).append("</b> ");
+                html.append(entry.getKey())
+                        .append(": <b>")
+                        .append(entry.getValue())
+                        .append("</b> ");
             }
             return Result.succeed(html.toString());
         } catch (Exception e) {
@@ -124,4 +129,3 @@ public class ArtJobController extends ApiController {
         }
     }
 }
-

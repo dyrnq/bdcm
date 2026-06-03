@@ -7,6 +7,8 @@ import com.wf.captcha.SpecCaptcha;
 import com.wf.captcha.base.Captcha;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
+import java.util.HashMap;
+import java.util.Map;
 import org.noear.solon.annotation.Controller;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.annotation.Mapping;
@@ -14,9 +16,6 @@ import org.noear.solon.core.handle.Context;
 import org.noear.solon.core.handle.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Mapping("token")
 @Controller
@@ -28,8 +27,10 @@ public class TokenController extends BaseController {
 
     @Inject("${server.session.state.jwt.secret:${jwt.secret:}}")
     String jwt_secret;
+
     @Inject("${server.session.state.jwt.prefix:${jwt.prefix:}}")
     String jwt_prefix;
+
     @Inject("${jwt.expire:864000000}")
     long jwt_expire;
 

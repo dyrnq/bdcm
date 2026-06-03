@@ -13,12 +13,14 @@ import org.slf4j.LoggerFactory;
 @Mapping("api/system")
 @Controller
 public class SystemController extends ApiController {
-    static final String DEFAULT_JWT_SECRET = "IDP32XTulsVIUZU+srFEUC9Lhu1wV+nd8iCJPoPA2zSFVAtWhCgpMEymxy5wFAZKMB9yROX31UjDzjwL66r1RA==";
+    static final String DEFAULT_JWT_SECRET =
+            "IDP32XTulsVIUZU+srFEUC9Lhu1wV+nd8iCJPoPA2zSFVAtWhCgpMEymxy5wFAZKMB9yROX31UjDzjwL66r1RA==";
     static Logger logger = LoggerFactory.getLogger(SystemController.class);
+
     @Inject("${server.session.state.jwt.secret:${jwt.secret:}}")
     String jwt_secret;
 
-    @Mapping("getVersion")  //获取版本号
+    @Mapping("getVersion") // 获取版本号
     public String getVersion() {
         return "1.0.0";
     }
@@ -36,5 +38,4 @@ public class SystemController extends ApiController {
             return Result.failure(e.getMessage());
         }
     }
-
 }

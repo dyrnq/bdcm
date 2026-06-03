@@ -5,5 +5,4 @@ import org.noear.wood.BaseMapper;
 import org.noear.wood.annotation.Db;
 
 @Db("db1")
-public interface ArtJobLogMapper extends BaseMapper<ArtJobLog> {
-}
+public interface ArtJobLogMapper extends BaseMapper<ArtJobLog> {}

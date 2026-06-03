@@ -1,12 +1,11 @@
 package com.dyrnq.bdcm;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.noear.solon.annotation.BindProps;
 import org.noear.solon.annotation.Configuration;
-
-import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
@@ -22,8 +21,7 @@ public class RepoProps implements Serializable {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    static
-    public class RepoS3 implements Serializable {
+    public static class RepoS3 implements Serializable {
         private String endpoint;
         private String accessKey;
         private String secretKey;
@@ -33,8 +31,7 @@ public class RepoProps implements Serializable {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    static
-    public class RepoLocal implements Serializable {
+    public static class RepoLocal implements Serializable {
         private String path;
         private String listen;
         private String additionalPrefixMapping;

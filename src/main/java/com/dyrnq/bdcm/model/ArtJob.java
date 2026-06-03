@@ -1,11 +1,10 @@
 package com.dyrnq.bdcm.model;
 
+import java.util.Date;
 import lombok.Data;
 import org.noear.wood.annotation.Column;
 import org.noear.wood.annotation.PrimaryKey;
 import org.noear.wood.annotation.Table;
-
-import java.util.Date;
 
 @Table("art_job")
 @Data

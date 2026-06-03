@@ -1,11 +1,8 @@
 package com.dyrnq.utils;
 
-
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.dyrnq.bdcm.Constants;
-
 import java.util.Properties;
-
 
 public class VersionUtils {
     public static String getGitRevision() throws Exception {

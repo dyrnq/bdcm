@@ -12,6 +12,8 @@ import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.util.ETag;
 import io.undertow.util.MimeMappings;
+import java.io.File;
+import java.net.InetSocketAddress;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.noear.solon.annotation.Configuration;
@@ -20,23 +22,22 @@ import org.noear.solon.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.InetSocketAddress;
-
 /**
  * "repo" 是 "repository" 的缩写。
  * 在软件开发和版本控制的 context 中，"repository" 指的是一个存储和管理代码、文件和其他数据的中央位置。例如，Git 仓库就是一个代码 repository。
  * 因此，"repo" 是一个常用的缩写，用于指代代码仓库、软件仓库或其他类型的 repository。
  */
-
 @Configuration
 public class RepoConfig {
-    final static int DEFAULT_REPO_LISTEN_PORT = 9980;
+    static final int DEFAULT_REPO_LISTEN_PORT = 9980;
     static Logger logger = LoggerFactory.getLogger(RepoConfig.class);
+
     @Inject
     RepoProps repoProps;
+
     @Inject
     HomeDir homeDir;
+
     private String guessExternalUrl;
 
     private RepoProps repoProps() {
@@ -75,17 +76,20 @@ public class RepoConfig {
 
         if (StrUtil.equalsIgnoreCase(RepoType.LOCAL, repoProps().getType())) {
             if (StrUtil.isNotBlank(repoProps().getLocal().getListen())) {
-                String defaultRepoLocalPath = StringUtils.joinWith(File.separator, homeDir.getHomeAbsolutePath(), "local_repo");
+                String defaultRepoLocalPath =
+                        StringUtils.joinWith(File.separator, homeDir.getHomeAbsolutePath(), "local_repo");
                 if (StrUtil.isBlank(repoProps().getLocal().getPath())) {
                     repoProps().getLocal().setPath(defaultRepoLocalPath);
                 }
                 FileUtil.mkdir(new File(repoProps().getLocal().getPath()));
-                InetSocketAddress inetSocketAddress = AddressUtils.parseAddress(repoProps().getLocal().getListen(), DEFAULT_REPO_LISTEN_PORT, true);
+                InetSocketAddress inetSocketAddress =
+                        AddressUtils.parseAddress(repoProps().getLocal().getListen(), DEFAULT_REPO_LISTEN_PORT, true);
                 if (StrUtil.isBlank(guessExternalUrl)) {
                     if (StrUtil.equalsAny(inetSocketAddress.getHostName(), "", "0.0.0.0")) {
                         guessExternalUrl = String.format("http://127.0.0.1:%s/", inetSocketAddress.getPort());
                     } else if (StrUtil.equals(inetSocketAddress.getHostName(), "0:0:0:0:0:0:0:0")) {
-                        guessExternalUrl = String.format("http://[0000:0000:0000:0000:0000:0000:0000:0001]:%s/", inetSocketAddress.getPort());
+                        guessExternalUrl = String.format(
+                                "http://[0000:0000:0000:0000:0000:0000:0000:0001]:%s/", inetSocketAddress.getPort());
                     }
                 }
                 Thread tcpThread = getThread(inetSocketAddress);
@@ -93,7 +97,11 @@ public class RepoConfig {
             }
         } else {
             if (StrUtil.isBlank(guessExternalUrl)) {
-                guessExternalUrl = StrUtil.join("/", repoProps().getS3().getEndpoint(), repoProps().getS3().getBucket(), "");
+                guessExternalUrl = StrUtil.join(
+                        "/",
+                        repoProps().getS3().getEndpoint(),
+                        repoProps().getS3().getBucket(),
+                        "");
             }
         }
         logger.debug("**********guessExternalUrl={}", guessExternalUrl);
@@ -108,8 +116,8 @@ public class RepoConfig {
 
         Thread tcpThread = new Thread(() -> {
             PathHandler path = new PathHandler();
-            ResourceManager resourceManager = FileResourceManager
-                    .builder().setBase(new File(repoProps().getLocal().getPath()).toPath())
+            ResourceManager resourceManager = FileResourceManager.builder()
+                    .setBase(new File(repoProps().getLocal().getPath()).toPath())
                     .setETagFunction(path1 -> {
                         long lastModified = path1.toFile().lastModified();
                         long size = path1.toFile().length();
@@ -119,7 +127,26 @@ public class RepoConfig {
             ResourceHandler resourceHandler = new ResourceHandler(resourceManager);
 
             String textContentTypeUTF8 = "text/plain; charset=utf-8";
-            String[] textTypes = new String[]{"txt", "cfg", "md", "log", "conf", "properties", "ini", "sh", "bat", "java", "js", "css", "xml", "json", "yaml", "yml", "sql", "service"};
+            String[] textTypes = new String[] {
+                "txt",
+                "cfg",
+                "md",
+                "log",
+                "conf",
+                "properties",
+                "ini",
+                "sh",
+                "bat",
+                "java",
+                "js",
+                "css",
+                "xml",
+                "json",
+                "yaml",
+                "yml",
+                "sql",
+                "service"
+            };
             MimeMappings.Builder builder = MimeMappings.builder(true);
             for (String textType : textTypes) {
                 builder.addMapping(textType, textContentTypeUTF8);
@@ -142,8 +169,8 @@ public class RepoConfig {
                             logger.warn("addPrefix is invalid: {}", addPrefix);
                             continue;
                         }
-                        ResourceManager resourceManagerAdd = FileResourceManager
-                                .builder().setBase(new File(addPath).toPath())
+                        ResourceManager resourceManagerAdd = FileResourceManager.builder()
+                                .setBase(new File(addPath).toPath())
                                 .setETagFunction(path2 -> {
                                     long lastModified = path2.toFile().lastModified();
                                     long size = path2.toFile().length();
@@ -159,7 +186,6 @@ public class RepoConfig {
                     }
                 }
             }
-
 
             Undertow server = Undertow.builder()
                     .addHttpListener(port_final, host_final)

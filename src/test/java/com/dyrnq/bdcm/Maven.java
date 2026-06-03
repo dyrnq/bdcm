@@ -1,6 +1,5 @@
 package com.dyrnq.bdcm;
 
-
 import cn.hutool.core.util.StrUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,7 +14,8 @@ public class Maven {
 
     public static void main(String[] args) {
 
-        String xml = """
+        String xml =
+                """
                 <dependency>
                     <groupId>org.apache.doris</groupId>
                     <artifactId>flink-doris-connector-1.20</artifactId>
@@ -54,7 +54,5 @@ public class Maven {
             System.out.println(StrUtil.replace(path, MAVEN_PATH, TENCENT_PATH));
             System.out.println(StrUtil.replace(path, MAVEN_PATH, ALIYUN_PATH));
         }
-
-
     }
 }

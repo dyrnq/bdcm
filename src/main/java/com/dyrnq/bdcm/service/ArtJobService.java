@@ -5,6 +5,9 @@ import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.dso.ArtJobMapper;
 import com.dyrnq.bdcm.service.dto.ArtJobQuery;
 import com.dyrnq.bdcm.service.dto.ArtJobView;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.DbContext;
@@ -15,17 +18,16 @@ import org.noear.wood.annotation.Db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 @Component
 public class ArtJobService {
     static Logger logger = LoggerFactory.getLogger(ArtJobService.class);
+
     @Db
     ArtJobMapper artJobMapper;
+
     @Db
     DbContext db;
+
     @Inject
     ThreadPoolUtils threadPoolUtils;
 
@@ -59,10 +61,9 @@ public class ArtJobService {
         return map;
     }
 
-
     public IPage<ArtJobView> query(int start, int size, ArtJobQuery query) throws SQLException {
 
-        //关联+分页查询
+        // 关联+分页查询
         DbTableQuery tableQuery = db.table("art_job a")
                 .leftJoin("artifact b")
                 .onEq("a.art_id", "b.id")
@@ -83,10 +84,9 @@ public class ArtJobService {
             whereQ.and().beginEq("a.status", query.getStatus()).end();
         }
 
-
-        IPage<ArtJobView> page = tableQuery.paging(start, size).selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
+        IPage<ArtJobView> page = tableQuery
+                .paging(start, size)
+                .selectPage("a.*, b.name as art_name, b.url as art_url", ArtJobView.class);
         return page;
-
     }
-
 }

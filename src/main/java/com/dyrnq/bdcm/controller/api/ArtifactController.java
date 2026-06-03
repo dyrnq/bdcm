@@ -1,6 +1,5 @@
 package com.dyrnq.bdcm.controller.api;
 
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.PageUtil;
@@ -13,6 +12,10 @@ import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
 import com.dyrnq.bdcm.service.dto.ArtQuery;
 import com.dyrnq.utils.IDUtils;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,18 +33,15 @@ import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
-
 @Mapping("api/artifact")
 @Controller
 @Valid
 public class ArtifactController extends ApiController {
     static Logger logger = LoggerFactory.getLogger(ArtifactController.class);
+
     @Inject
     ArtifactMapper artifactMapper;
+
     @Inject
     ArtifactService artifactService;
 
@@ -52,25 +52,42 @@ public class ArtifactController extends ApiController {
             Act1<MapperWhereQ> condition = mapperWhereQ -> {
                 mapperWhereQ.whereTrue();
 
-
                 if (StrUtil.isNotBlank(query.getArtName())) {
-                    mapperWhereQ.and().beginLk("name", "%" + query.getArtName() + "%").end();
+                    mapperWhereQ
+                            .and()
+                            .beginLk("name", "%" + query.getArtName() + "%")
+                            .end();
                 }
                 if (StrUtil.isNotBlank(query.getArtUrl())) {
-                    mapperWhereQ.and().beginLk("url", "%" + query.getArtUrl() + "%").end();
+                    mapperWhereQ
+                            .and()
+                            .beginLk("url", "%" + query.getArtUrl() + "%")
+                            .end();
                 }
                 if (ObjectUtil.isNotEmpty(query.getArtId())) {
-                    mapperWhereQ.and().beginLk("id", "%" + query.getArtId() + "%").end();
+                    mapperWhereQ
+                            .and()
+                            .beginLk("id", "%" + query.getArtId() + "%")
+                            .end();
                 }
                 if (ObjectUtil.isNotEmpty(query.getArtAutoJob())) {
                     if (1 == query.getArtAutoJob()) {
-                        mapperWhereQ.and().beginEq("auto_job", query.getArtAutoJob()).end();
+                        mapperWhereQ
+                                .and()
+                                .beginEq("auto_job", query.getArtAutoJob())
+                                .end();
                     } else {
-                        mapperWhereQ.and().begin("auto_job is null or auto_job !=1").end();
+                        mapperWhereQ
+                                .and()
+                                .begin("auto_job is null or auto_job !=1")
+                                .end();
                     }
                 }
                 if (ObjectUtil.isNotEmpty(query.getFinalStatus())) {
-                    mapperWhereQ.and().beginEq("final_status", query.getFinalStatus()).end();
+                    mapperWhereQ
+                            .and()
+                            .beginEq("final_status", query.getFinalStatus())
+                            .end();
                 }
                 if (ObjectUtil.isNotEmpty(query.getArtLock())) {
                     if (1 == query.getArtLock()) {
@@ -79,7 +96,6 @@ public class ArtifactController extends ApiController {
                         mapperWhereQ.and().begin("_lock is null or _lock !=1").end();
                     }
                 }
-
             };
 
             int start = PageUtil.getStart(page - 1, limit);
@@ -96,13 +112,20 @@ public class ArtifactController extends ApiController {
     public Result add(Context ctx, Artifact artifact) {
         try {
 
-            long count = artifactMapper.db().table("artifact").whereTrue().and().beginEq("url", artifact.getUrl()).end().selectCount();
+            long count = artifactMapper
+                    .db()
+                    .table("artifact")
+                    .whereTrue()
+                    .and()
+                    .beginEq("url", artifact.getUrl())
+                    .end()
+                    .selectCount();
             if (count > 0) {
                 return Result.failure(String.format("%s已存在!请不要重复增加!", artifact.getUrl()));
             }
 
             Long id = IDUtils.getLongID();
-//            logger.info("id={}",id);
+            //            logger.info("id={}",id);
             if (ObjectUtil.isNull(artifact.getId())) {
                 artifact.setId(id);
             }
@@ -174,7 +197,15 @@ public class ArtifactController extends ApiController {
             for (long i : id) {
                 list.add(i);
             }
-            artifactMapper.db().table("artifact").set("auto_job", 1).whereTrue().and().beginIn("id", list).end().update();
+            artifactMapper
+                    .db()
+                    .table("artifact")
+                    .set("auto_job", 1)
+                    .whereTrue()
+                    .and()
+                    .beginIn("id", list)
+                    .end()
+                    .update();
             return Result.succeed("ok");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -189,7 +220,15 @@ public class ArtifactController extends ApiController {
             for (long i : id) {
                 list.add(i);
             }
-            artifactMapper.db().table("artifact").set("auto_job", 0).whereTrue().and().beginIn("id", list).end().update();
+            artifactMapper
+                    .db()
+                    .table("artifact")
+                    .set("auto_job", 0)
+                    .whereTrue()
+                    .and()
+                    .beginIn("id", list)
+                    .end()
+                    .update();
             return Result.succeed("ok");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -204,10 +243,18 @@ public class ArtifactController extends ApiController {
             for (long i : id) {
                 list.add(i);
             }
-            artifactMapper.db().table("artifact").usingNull(true)
+            artifactMapper
+                    .db()
+                    .table("artifact")
+                    .usingNull(true)
                     .set("current_job_id", null)
                     .set("final_status", null)
-                    .set("_lock", null).whereTrue().and().beginIn("id", list).end().update();
+                    .set("_lock", null)
+                    .whereTrue()
+                    .and()
+                    .beginIn("id", list)
+                    .end()
+                    .update();
             return Result.succeed("ok");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -244,7 +291,14 @@ public class ArtifactController extends ApiController {
                     artifact.setUrl(k[0]);
                     artifact.setAutoJob(1);
                 }
-                long count = artifactMapper.db().table("artifact").whereTrue().and().beginEq("url", artifact.getUrl()).end().selectCount();
+                long count = artifactMapper
+                        .db()
+                        .table("artifact")
+                        .whereTrue()
+                        .and()
+                        .beginEq("url", artifact.getUrl())
+                        .end()
+                        .selectCount();
                 if (count > 0) {
                     logger.debug("{}已存在! skip", artifact.getUrl());
                     skip++;
@@ -252,7 +306,6 @@ public class ArtifactController extends ApiController {
                     artifactMapper.insert(artifact, true);
                     success++;
                 }
-
             }
             String skipStr = "";
             if (skip > 0) {
@@ -270,8 +323,7 @@ public class ArtifactController extends ApiController {
         long currentTimeMillis = System.currentTimeMillis();
 
         StringBuffer sb = new StringBuffer();
-        List<Artifact> list = artifactMapper.selectList(c -> {
-        });
+        List<Artifact> list = artifactMapper.selectList(c -> {});
 
         for (Artifact artifact : list) {
 
@@ -290,6 +342,4 @@ public class ArtifactController extends ApiController {
         DownloadedFile file = new DownloadedFile("application/octet-stream", bytes, fileName);
         ctx.outputAsFile(file);
     }
-
 }
-

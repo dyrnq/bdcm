@@ -1,18 +1,17 @@
 package com.dyrnq.bdcm.service;
 
 import com.dyrnq.bdcm.GrabProps;
+import java.util.concurrent.*;
 import lombok.Getter;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Init;
 import org.noear.solon.annotation.Inject;
 
-import java.util.concurrent.*;
-
 @Getter
 @Component
 public class ThreadPoolUtils {
-    final static int DEFAULT_CAPACITY = 1000;
-    final static int DEFAULT_THREAD_NUM = 100;
+    static final int DEFAULT_CAPACITY = 1000;
+    static final int DEFAULT_THREAD_NUM = 100;
 
     @Inject
     GrabProps grabProps;
@@ -50,13 +49,8 @@ public class ThreadPoolUtils {
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(capacity); // 任务队列
 
         executorService = new ThreadPoolExecutor(
-                corePoolSize,
-                maxPoolSize,
-                keepAliveTime,
-                unit,
-                workQueue,
-                new ThreadPoolExecutor.AbortPolicy() // 拒绝策略
-        );
+                corePoolSize, maxPoolSize, keepAliveTime, unit, workQueue, new ThreadPoolExecutor.AbortPolicy() // 拒绝策略
+                );
         try {
             ((ThreadPoolExecutor) executorService).prestartAllCoreThreads();
         } catch (Exception ignore) {
@@ -91,7 +85,6 @@ public class ThreadPoolUtils {
     public int getPoolSize() {
         return ((ThreadPoolExecutor) executorService).getPoolSize();
     }
-
 
     // 提交任务（Runnable）
     public void execute(Runnable task) {

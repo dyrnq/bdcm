@@ -14,6 +14,17 @@ import com.dyrnq.utils.IDUtils;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
@@ -30,18 +41,6 @@ import org.noear.wood.annotation.Db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
-
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -102,7 +101,6 @@ public class ArtifactService {
         return download(id, null, 0);
     }
 
-
     protected Tuple2<Proxy, okhttp3.Authenticator> buildProxy(String fileURL) {
         Proxy proxy = null;
         okhttp3.Authenticator proxyAuthenticator = null;
@@ -117,9 +115,13 @@ public class ArtifactService {
                     } catch (Exception ignore) {
                     }
                 }
-                proxy = new Proxy(type, new InetSocketAddress(getHttpProxy().getHost(), getHttpProxy().getPort()));
+                proxy = new Proxy(
+                        type,
+                        new InetSocketAddress(
+                                getHttpProxy().getHost(), getHttpProxy().getPort()));
             }
-            String[] excludeHosts = StringUtils.splitByWholeSeparator(getHttpProxy().getExclude(), ",");
+            String[] excludeHosts =
+                    StringUtils.splitByWholeSeparator(getHttpProxy().getExclude(), ",");
             for (String excludeHost : excludeHosts) {
                 String host = "";
                 try {
@@ -133,7 +135,6 @@ public class ArtifactService {
                     proxy = null;
                     break;
                 }
-
             }
             String username = getHttpProxy().getUsername();
             String password = getHttpProxy().getPassword();
@@ -141,12 +142,12 @@ public class ArtifactService {
             if (StrUtil.isNotBlank(username)) {
                 proxyAuthenticator = (route, response) -> {
                     String credential = Credentials.basic(username, password);
-                    return response.request().newBuilder()
+                    return response.request()
+                            .newBuilder()
                             .header("Proxy-Authorization", credential)
                             .build();
                 };
             }
-
         }
         return Tuple.tuple(proxy, proxyAuthenticator);
     }
@@ -222,9 +223,15 @@ public class ArtifactService {
             String saveFilePath;
             // 根据存储模式选择文件的存储路径
             if (repoProps.getType().equals(RepoType.LOCAL)) {
-                saveFilePath = StringUtils.joinWith(File.separator, repoProps().getLocal().getPath(), StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
+                saveFilePath = StringUtils.joinWith(
+                        File.separator,
+                        repoProps().getLocal().getPath(),
+                        StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
             } else {
-                saveFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
+                saveFilePath = StringUtils.joinWith(
+                        File.separator,
+                        homeDir.getTmpAbsolutePath(),
+                        StrUtil.startWith(rawUrl, "/") ? rawUrl.substring(1) : rawUrl);
             }
             // 设置代理
 
@@ -233,7 +240,8 @@ public class ArtifactService {
             Proxy proxy = proxyTuple.v1;
             okhttp3.Authenticator proxyAuthenticator = proxyTuple.v2;
             try {
-                tuple = downloadFileWithResume(fileURL, saveFilePath, proxy, proxyAuthenticator, jobId, artifact.getEtag());
+                tuple = downloadFileWithResume(
+                        fileURL, saveFilePath, proxy, proxyAuthenticator, jobId, artifact.getEtag());
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
@@ -259,8 +267,14 @@ public class ArtifactService {
         }
     }
 
-
-    public Tuple2<Long, String> downloadFileWithResume(String fileURL, String saveFilePath, Proxy proxy, okhttp3.Authenticator proxyAuthenticator, Long jobId, String eTagPersistence) throws Exception {
+    public Tuple2<Long, String> downloadFileWithResume(
+            String fileURL,
+            String saveFilePath,
+            Proxy proxy,
+            okhttp3.Authenticator proxyAuthenticator,
+            Long jobId,
+            String eTagPersistence)
+            throws Exception {
         File file = new File(saveFilePath);
         String rawUrl = getPathFromURL(fileURL);
 
@@ -280,7 +294,10 @@ public class ArtifactService {
             eTag = tuple.v2;
         }
 
-        String progressFilePath = StringUtils.joinWith(File.separator, homeDir.getTmpAbsolutePath(), StringUtils.replace(rawUrl, "/", "__") + ".progress"); // 进度文件
+        String progressFilePath = StringUtils.joinWith(
+                File.separator,
+                homeDir.getTmpAbsolutePath(),
+                StringUtils.replace(rawUrl, "/", "__") + ".progress"); // 进度文件
         File progressFile = new File(progressFilePath); // 进度文件
 
         // 如果文件已存在，检查文件大小是否与远程文件大小一致
@@ -291,25 +308,41 @@ public class ArtifactService {
                 info(jobId, "该文件已存在且完整，无需重新下载, jobId={}, saveFilePath={}, eTag={}", jobId, saveFilePath, eTag);
                 return tuple; // 文件已存在且完整，直接返回
             } else {
-                info(jobId, "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag);
+                info(
+                        jobId,
+                        "文件已存在但不完整，继续下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}",
+                        jobId,
+                        saveFilePath,
+                        remoteFileSize,
+                        existingFileSize,
+                        eTag);
             }
             if (StringUtils.isNotBlank(eTagPersistence)) {
                 if (!Strings.CI.equals(eTag, eTagPersistence)) {
                     existingFileSize = 0;
-                    info(jobId, "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}", jobId, saveFilePath, remoteFileSize, existingFileSize, eTag, eTagPersistence);
+                    info(
+                            jobId,
+                            "对比eTag不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, eTag={}，eTagPersistence={}",
+                            jobId,
+                            saveFilePath,
+                            remoteFileSize,
+                            existingFileSize,
+                            eTag,
+                            eTagPersistence);
                 }
             }
         }
 
         // 如果进度文件存在，读取已下载的字节数
-//        if (progressFile.exists()) {
-//            try (FileInputStream fis = new FileInputStream(progressFile)) {
-//                byte[] bytes = new byte[Long.BYTES];
-//                fis.read(bytes);
-//                existingFileSize = bytesToLong(bytes);
-//                logger.info("文件已存在但不完整，继续下载, id={}, saveFilePath={}, 从{}开始下载", id, saveFilePath, formatFileSize(existingFileSize));
-//            }
-//        }
+        //        if (progressFile.exists()) {
+        //            try (FileInputStream fis = new FileInputStream(progressFile)) {
+        //                byte[] bytes = new byte[Long.BYTES];
+        //                fis.read(bytes);
+        //                existingFileSize = bytesToLong(bytes);
+        //                logger.info("文件已存在但不完整，继续下载, id={}, saveFilePath={}, 从{}开始下载", id, saveFilePath,
+        // formatFileSize(existingFileSize));
+        //            }
+        //        }
 
         // 检查并创建父目录
         File parentDir = file.getParentFile();
@@ -351,7 +384,7 @@ public class ArtifactService {
             info(jobId, "jobId={}, 文件总大小={}, url={}", jobId, formatFileSize(fileSize), fileURL);
 
             try (InputStream inputStream = response.body().byteStream();
-                 RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
+                    RandomAccessFile outputFile = new RandomAccessFile(file, "rw")) {
 
                 outputFile.seek(existingFileSize);
 
@@ -394,8 +427,14 @@ public class ArtifactService {
                     uploadObjectS3(saveFilePath, rawUrl);
                 }
 
-                info(jobId, "jobId={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}", jobId, formatFileSize(fileSize), fileURL, saveFilePath, deleted);
-
+                info(
+                        jobId,
+                        "jobId={}, 文件总大小={}, url={}, 文件下载完成={}, delete progressFile={}",
+                        jobId,
+                        formatFileSize(fileSize),
+                        fileURL,
+                        saveFilePath,
+                        deleted);
             }
         } finally {
             if (response != null) {
@@ -420,7 +459,7 @@ public class ArtifactService {
     private OkHttpClient createOkHttpClient(Proxy proxy, okhttp3.Authenticator proxyAuthenticator) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .followRedirects(true)
-//                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                //                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .followSslRedirects(true)
                 .connectTimeout(grabProps.getConnectTimeout(), TimeUnit.MILLISECONDS) // 连接超时
                 .readTimeout(grabProps.getReadTimeout(), TimeUnit.MILLISECONDS); // 读取超时
@@ -431,7 +470,6 @@ public class ArtifactService {
                 builder.proxyAuthenticator(proxyAuthenticator);
             }
         }
-
 
         return builder.build();
     }
@@ -456,7 +494,8 @@ public class ArtifactService {
     /**
      * 获取远程文件的大小
      */
-    private Tuple2<Long, String> getRemoteFileSize(String fileURL, Proxy proxy, okhttp3.Authenticator proxyAuthenticator) throws IOException {
+    private Tuple2<Long, String> getRemoteFileSize(
+            String fileURL, Proxy proxy, okhttp3.Authenticator proxyAuthenticator) throws IOException {
         Tuple2<Long, String> tuple2 = null;
         long contentLength = -1;
         String eTag = "";
@@ -472,19 +511,19 @@ public class ArtifactService {
             response = client.newCall(request).execute();
             if (response.isSuccessful()) {
 
-
                 try {
                     contentLength = Long.parseLong(Objects.requireNonNull(response.header("Content-Length")));
                 } catch (Exception ignored) {
 
                 }
                 try {
-//
-//                    ETag机制同时支持强校验和弱校验。它们通过ETag标识符的开头是否存在“W/”来区分，如：
-//
-//                    "123456789"   -- 一个强ETag验证符
-//                    W/"123456789"  -- 一个弱ETag验证符
-//                    强校验的ETag匹配要求两个资源内容的每个字节需完全相同，包括所有其他实体字段（如Content-Language）不发生变化。强ETag允许重新装配和缓存部分响应，以及字节范围请求。弱校验的ETag匹配要求两个资源在语义上相等，这意味着在实际情况下它们可以互换，而且缓存副本也可以使用。不过这些资源不需要每个字节相同，因此弱ETag不适合字节范围请求。当Web服务器无法生成强ETag的时候，比如动态生成的内容，弱ETag就可能发挥作用了。
+                    //
+                    //                    ETag机制同时支持强校验和弱校验。它们通过ETag标识符的开头是否存在“W/”来区分，如：
+                    //
+                    //                    "123456789"   -- 一个强ETag验证符
+                    //                    W/"123456789"  -- 一个弱ETag验证符
+                    //
+                    // 强校验的ETag匹配要求两个资源内容的每个字节需完全相同，包括所有其他实体字段（如Content-Language）不发生变化。强ETag允许重新装配和缓存部分响应，以及字节范围请求。弱校验的ETag匹配要求两个资源在语义上相等，这意味着在实际情况下它们可以互换，而且缓存副本也可以使用。不过这些资源不需要每个字节相同，因此弱ETag不适合字节范围请求。当Web服务器无法生成强ETag的时候，比如动态生成的内容，弱ETag就可能发挥作用了。
 
                     eTag = Objects.requireNonNull(response.header("ETag"));
                     if (StringUtils.startsWith(eTag, "W/")) {
@@ -554,7 +593,10 @@ public class ArtifactService {
         }
     }
 
-    private void uploadObjectS3(String localFilePath, String object) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    private void uploadObjectS3(String localFilePath, String object)
+            throws IOException, ServerException, InsufficientDataException, ErrorResponseException,
+                    NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException,
+                    InternalException {
         String accessKey = repoProps.getS3().getAccessKey();
         String secretKey = repoProps.getS3().getSecretKey();
         String bucket = repoProps.getS3().getBucket();
@@ -562,19 +604,16 @@ public class ArtifactService {
                 .endpoint(repoProps.getS3().getEndpoint())
                 .credentials(accessKey, secretKey)
                 .build();
-        minioClient.uploadObject(
-                UploadObjectArgs.builder()
-                        .bucket(bucket)
-                        .object(object)
-                        .filename(localFilePath)
-                        .build());
+        minioClient.uploadObject(UploadObjectArgs.builder()
+                .bucket(bucket)
+                .object(object)
+                .filename(localFilePath)
+                .build());
     }
-
 
     /**
      * 下载log记录
      */
-
     private void error(Long jobId, Exception e) {
         ArtJobLog artJobLog = new ArtJobLog();
         artJobLog.setId(IDUtils.getLongID());

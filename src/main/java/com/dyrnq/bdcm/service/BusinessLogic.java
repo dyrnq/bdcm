@@ -4,6 +4,7 @@ import cn.hutool.core.codec.Base64;
 import com.dyrnq.bdcm.dso.UserMapper;
 import com.dyrnq.bdcm.model.User;
 import com.dyrnq.utils.BCryptPasswordEncoder;
+import java.util.List;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.i18n.I18nUtil;
 import org.noear.wood.MapperWhereQ;
@@ -12,14 +13,12 @@ import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 @Component
 public class BusinessLogic {
     static Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
+
     @Db
     UserMapper userMapper;
-
 
     /**
      * 使用base64传入用户名和密码进行登录,传入的参数base64Name和base64Pass都被base64过两次，因此这里也要解开两次
@@ -48,7 +47,7 @@ public class BusinessLogic {
             throw new RuntimeException(I18nUtil.getMessage("loginStr.backError5"));
         }
 
-        //return null;
+        // return null;
     }
 
     /**
@@ -77,6 +76,4 @@ public class BusinessLogic {
         }
         return null;
     }
-
-
 }

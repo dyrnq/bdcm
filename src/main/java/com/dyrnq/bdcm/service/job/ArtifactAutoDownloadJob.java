@@ -5,6 +5,8 @@ import com.dyrnq.bdcm.dso.ArtifactMapper;
 import com.dyrnq.bdcm.model.Artifact;
 import com.dyrnq.bdcm.service.ArtifactService;
 import com.dyrnq.bdcm.service.ThreadPoolUtils;
+import java.util.ArrayList;
+import java.util.List;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.scheduling.annotation.Scheduled;
 import org.noear.wood.MapperWhereQ;
@@ -12,14 +14,13 @@ import org.noear.wood.ext.Act1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Scheduled(fixedRate = 1000 * 3)
 public class ArtifactAutoDownloadJob implements Runnable {
     static Logger logger = LoggerFactory.getLogger(ArtifactAutoDownloadJob.class);
+
     @Inject
     ArtifactService artifactService;
+
     @Inject
     ArtifactMapper artifactMapper;
 
@@ -30,22 +31,27 @@ public class ArtifactAutoDownloadJob implements Runnable {
     public void run() {
         logger.debug("开始ArtifactAutoDownloadJob..................");
 
-
         int corePoolSize = threadPoolUtils.getCorePoolSize();
         int activeCount = threadPoolUtils.getActiveCount();
         int maxPoolSize = threadPoolUtils.getMaxPoolSize();
         long taskCount = threadPoolUtils.getTaskCount();
         int poolSize = threadPoolUtils.getPoolSize();
         int free = corePoolSize - activeCount;
-        logger.debug("maxPoolSize：{}, activeCount：{} taskCount: {}, poolSize: {}", maxPoolSize, activeCount, taskCount, poolSize);
+        logger.debug(
+                "maxPoolSize：{}, activeCount：{} taskCount: {}, poolSize: {}",
+                maxPoolSize,
+                activeCount,
+                taskCount,
+                poolSize);
         if (free <= 0) {
             logger.debug("free <= 0, skip");
             return;
         }
 
         Act1<MapperWhereQ> condition = mapperWhereQ -> {
-            //mapperWhereQ.whereEq("auto_job", 1).andNeq("_lock", 1).limit(1);
-            mapperWhereQ.whereEq("auto_job", 1)
+            // mapperWhereQ.whereEq("auto_job", 1).andNeq("_lock", 1).limit(1);
+            mapperWhereQ
+                    .whereEq("auto_job", 1)
                     .and()
                     .begin("_lock is null or _lock !=1")
                     .end()

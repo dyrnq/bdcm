@@ -2,6 +2,10 @@ package com.dyrnq.bdcm.controller.api;
 
 import cn.hutool.core.util.StrUtil;
 import com.dyrnq.bdcm.controller.ApiController;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,18 +17,12 @@ import org.noear.solon.core.handle.Context;
 import org.noear.solon.core.handle.Result;
 import org.noear.solon.validation.annotation.Valid;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 @Mapping("api/maven")
 @Controller
 @Valid
 @Slf4j
 public class MavenController extends ApiController {
     static final String MAVEN_PATH = "https://repo1.maven.org/maven2/";
-
 
     static final Map<String, String> MIRROR = new LinkedHashMap<>();
 
@@ -33,7 +31,6 @@ public class MavenController extends ApiController {
         MIRROR.put("aliyun", "https://maven.aliyun.com/repository/public/");
         MIRROR.put("tencent", "http://mirrors.cloud.tencent.com/nexus/repository/maven-public/");
         MIRROR.put("local", "");
-
     }
 
     @Mapping("url")
@@ -56,7 +53,9 @@ public class MavenController extends ApiController {
                 String url = path;
                 String groupId = dep.selectFirst("groupId").text();
                 String artifactId = dep.selectFirst("artifactId").text();
-                String version = dep.selectFirst("version") != null ? dep.selectFirst("version").text() : "_NONE";
+                String version = dep.selectFirst("version") != null
+                        ? dep.selectFirst("version").text()
+                        : "_NONE";
                 String group = StrUtil.replace(groupId, ".", "/");
                 log.info("Dependency: {}:{}:{}", groupId, artifactId, version);
                 url = StrUtil.replace(url, "${group}", group);
@@ -82,7 +81,9 @@ public class MavenController extends ApiController {
             for (Element dep : deps) {
                 String groupId = dep.selectFirst("groupId").text();
                 String artifactId = dep.selectFirst("artifactId").text();
-                String version = dep.selectFirst("version") != null ? dep.selectFirst("version").text() : "_NONE";
+                String version = dep.selectFirst("version") != null
+                        ? dep.selectFirst("version").text()
+                        : "_NONE";
                 String group = StrUtil.replace(groupId, ".", "/");
                 cmdList.add("mvn dependency:get -Dartifact=" + groupId + ":" + artifactId + ":" + version);
             }

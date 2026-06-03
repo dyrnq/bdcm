@@ -1,16 +1,13 @@
 package com.dyrnq.bdcm.cli;
 
-
 import picocli.CommandLine;
 
 @CommandLine.Command(
         subcommands = {
-                Jwt.class,
+            Jwt.class,
         },
-        mixinStandardHelpOptions = true
-)
+        mixinStandardHelpOptions = true)
 public class CliMain implements Runnable {
-
 
     public static void main(String[] args) {
         CliMain app = new CliMain();
@@ -19,8 +16,5 @@ public class CliMain implements Runnable {
     }
 
     @Override
-    public void run() {
-
-    }
-
+    public void run() {}
 }

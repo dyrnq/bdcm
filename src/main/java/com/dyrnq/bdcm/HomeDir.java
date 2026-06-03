@@ -14,5 +14,4 @@ public class HomeDir {
 
     private String homeAbsolutePath;
     private String tmpAbsolutePath;
-
 }
