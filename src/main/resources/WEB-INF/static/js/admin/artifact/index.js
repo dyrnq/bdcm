@@ -8,6 +8,11 @@
 //});
 //editor1.resize();
 
+function escAttr(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function cleanData(d){
     console.log(d)
     $('#addForm1 input, #addForm1 select, #addForm1 textarea, #addForm1 checkbox').val('');
@@ -34,7 +39,7 @@ function addLink(d) {
     var link = d.url.split('://')[1];
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    let url  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+externalUrl+''+link+'" target="_blank">link</a>'
+    let url  = '<a class="layui-btn layui-btn-normal layui-btn-xs" href="'+escAttr(externalUrl)+escAttr(link)+'" target="_blank">link</a>'
 
     return editBtn+'&nbsp;'+delBtn+'&nbsp;'+url;
 }

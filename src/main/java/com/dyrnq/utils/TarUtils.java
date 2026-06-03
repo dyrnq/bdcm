@@ -1,14 +1,12 @@
 package com.dyrnq.utils;
 
+import java.io.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
-
-import java.io.*;
-
 
 public class TarUtils {
     /**
@@ -29,8 +27,11 @@ public class TarUtils {
             gzipOutputStream = new GzipCompressorOutputStream(bufferedOutputStream);
             tarArchiveOutputStream = new TarArchiveOutputStream(gzipOutputStream);
             File sourceDir = new File(sourceDirPath);
-            for (File file : sourceDir.listFiles()) {
-                addFileToTarGz(tarArchiveOutputStream, "", file);
+            File[] files = sourceDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    addFileToTarGz(tarArchiveOutputStream, "", file);
+                }
             }
         } finally {
             IOUtils.closeQuietly(tarArchiveOutputStream, null);
@@ -40,7 +41,8 @@ public class TarUtils {
         }
     }
 
-    private static void addFileToTarGz(TarArchiveOutputStream tarArchiveOutputStream, String base, File file) throws IOException {
+    private static void addFileToTarGz(TarArchiveOutputStream tarArchiveOutputStream, String base, File file)
+            throws IOException {
         String entryName = base + file.getName();
         TarArchiveEntry tarEntry = new TarArchiveEntry(file, entryName);
         tarArchiveOutputStream.putArchiveEntry(tarEntry);
@@ -56,13 +58,15 @@ public class TarUtils {
             tarArchiveOutputStream.closeArchiveEntry();
         } else if (file.isDirectory()) {
             tarArchiveOutputStream.closeArchiveEntry();
-            for (File childFile : file.listFiles()) {
-                String childBase = entryName + "/";
-                addFileToTarGz(tarArchiveOutputStream, childBase, childFile);
+            File[] childFiles = file.listFiles();
+            if (childFiles != null) {
+                for (File childFile : childFiles) {
+                    String childBase = entryName + "/";
+                    addFileToTarGz(tarArchiveOutputStream, childBase, childFile);
+                }
             }
         }
     }
-
 
     /**
      * 解压缩tar.gz文件
@@ -101,5 +105,4 @@ public class TarUtils {
         }
         tais.close();
     }
-
 }
