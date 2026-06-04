@@ -29,7 +29,7 @@ function cleanData(d){
 function addLink(d) {
     let editBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">' + commonStr.edit + '</button>'
     let delBtn  = '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">' + commonStr.del + '</button>'
-    let logBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(' + d.id + ')">log</button>'
+    let logBtn = '<button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(' + "\'" + d.id + "\'")">log</button>'
     return delBtn + '&nbsp;' + logBtn;
 }
 
