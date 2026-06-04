@@ -2,7 +2,7 @@
 
 ## 描述
 
-<img src="https://a.dyrnq.com/bdcm/images/logo.png" alt="bdcm" width="300" height="300"><br/>
+<img src="docs/images/logo.png" alt="bdcm" width="300" height="300"><br/>
 
 bdcm(binary distribution cache management)是一个二进制分发文件的缓存下载管理系统。灵感来源于<a target="_blank" href="https://github.com/DaoCloud/public-binary-files-mirror">DaoCloud/public-binary-files-mirror</a>。
 
@@ -75,6 +75,6 @@ ls -l |grep zookeeper
 )
 ```
 
-<!-- <img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-57-53 bdcm.png" alt="bdcm" width="589" height="310"> -->
-<img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-58-13 bdcm.png" alt="bdcm" width="589" height="310">
-<img src="https://a.dyrnq.com/bdcm/images/Screenshot%202025-03-18%20at%2009-58-02 bdcm.png" alt="bdcm" width="589" height="310">
+<!-- <img src="docs/images/screenshot-03.png" alt="bdcm" width="589" height="310"> -->
+<img src="docs/images/screenshot-01.png" alt="bdcm" width="589" height="310">
+<img src="docs/images/screenshot-02.png" alt="bdcm" width="589" height="310">
