@@ -36,25 +36,32 @@ function addLink(d) {
 function viewLog(jobId) {
     window._currentLogJobId = jobId;
     var loadIdx = layer.load();
+    var jobInfo = null;
+    var jobLoad = $.ajax({
+        type: 'GET',
+        url: ctx + '/api/artJob/get',
+        data: { id: jobId },
+        dataType: 'json'
+    });
     layui.jquery.ajax({
         type: 'GET',
         url: ctx + '/api/artJob/log/' + jobId,
-        dataType: 'json',
-        success: function(data) {
+        dataType: 'json'
+    }).always(function(logRes) {
+        $.when(jobLoad).done(function(jobRes) {
             layer.close(loadIdx);
-            if (data.code == 200) {
-                var logs = data.data;
+            if (jobRes && jobRes.code == 200) {
+                jobInfo = jobRes.data;
+            }
+            if (logRes && logRes.code == 200 && logRes.data && logRes.data.length > 0) {
+                var logs = logRes.data;
                 var html = '';
-                if (logs && logs.length > 0) {
-                    html += '<div style="margin-bottom:10px"><button class="layui-btn layui-btn-xs layui-btn-normal" onclick="downloadLog()"><i class="layui-icon layui-icon-download-circle"></i> 下载日志</button></div>';
-                    html += '<div id="logContent">';
-                    for (var i = 0; i < logs.length; i++) {
-                        html += '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(logs[i].log) + '</pre>';
-                    }
-                    html += '</div>';
-                } else {
-                    html = '<div style="text-align:center;padding:20px;color:#999">暂无日志</div>';
+                html += '<div style="margin-bottom:10px"><button class="layui-btn layui-btn-xs layui-btn-normal" onclick="downloadLog()"><i class="layui-icon layui-icon-download-circle"></i> 下载日志</button></div>';
+                html += '<div id="logContent">';
+                for (var i = 0; i < logs.length; i++) {
+                    html += '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(logs[i].log) + '</pre>';
                 }
+                html += '</div>';
                 layer.open({
                     type: 1,
                     title: '日志 - Job #' + jobId,
@@ -64,13 +71,30 @@ function viewLog(jobId) {
                     maxmin: true
                 });
             } else {
-                layer.msg(data.description || '获取日志失败');
+                var summary = '';
+                if (jobInfo) {
+                    var statusMap = {0:'下载中',1:'完成',2:'异常'};
+                    var statusText = statusMap[jobInfo.status] || jobInfo.status;
+                    summary += '<div style="margin-bottom:15px;padding:10px;background:#f8f8f8;border-radius:4px">';
+                    summary += '<div><b>状态：</b>' + statusText + '</div>';
+                    if (jobInfo.progress) summary += '<div><b>进度：</b>' + jobInfo.progress + '</div>';
+                    if (jobInfo.beginTime) summary += '<div><b>开始时间：</b>' + layui.util.toDateString(jobInfo.beginTime, 'yyyy-MM-dd HH:mm:ss') + '</div>';
+                    if (jobInfo.endTime) summary += '<div><b>结束时间：</b>' + layui.util.toDateString(jobInfo.endTime, 'yyyy-MM-dd HH:mm:ss') + '</div>';
+                    summary += '</div>';
+                }
+                layer.open({
+                    type: 1,
+                    title: '日志 - Job #' + jobId,
+                    area: ['600px', '400px'],
+                    content: '<div style="padding:15px">' + summary + '<div style="text-align:center;padding:30px;color:#999">暂无日志</div></div>',
+                    shadeClose: true,
+                    maxmin: true
+                });
             }
-        },
-        error: function() {
+        }).fail(function() {
             layer.close(loadIdx);
             layer.msg('获取日志失败');
-        }
+        });
     });
 }
 
