@@ -66,7 +66,7 @@ function copyUrl(url) {
 }
 function addLog(d) {
     if (typeof d !== 'undefined' && d !== null && typeof d.currentJobId !== 'undefined' && d.currentJobId !== null) {
-        return '<button class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(' + "\'" + d.currentJobId + "\'")">log</button>'
+        return '<button class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewLog(\'' + d.currentJobId + '\')">log</button>'
     } else {
         return '';
     }
