@@ -45,4 +45,7 @@ public class Artifact {
 
     @Column("file_size")
     private Long fileSize;
+
+    @Column("last_modified")
+    private String lastModified;
 }
