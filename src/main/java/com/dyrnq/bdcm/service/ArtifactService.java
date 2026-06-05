@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
+import org.jooq.lambda.tuple.Tuple3;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 import org.noear.wood.annotation.Db;
@@ -152,7 +153,7 @@ public class ArtifactService {
         return Tuple.tuple(proxy, proxyAuthenticator);
     }
 
-    protected void unlockArtifact(Long id, Tuple2<Long, String> tuple, int status) {
+    protected void unlockArtifact(Long id, Tuple3<Long, String, String> tuple, int status) {
         Artifact artifact = new Artifact();
         artifact.setId(id);
         artifact.setLock(0);
@@ -160,6 +161,9 @@ public class ArtifactService {
         if (tuple != null) {
             artifact.setFileSize(tuple.v1);
             artifact.setEtag(tuple.v2);
+        }
+        if (tuple != null && StringUtils.isNotBlank(tuple.v3)) {
+            artifact.setLastModified(tuple.v3);
         }
         artifactMapper.updateById(artifact, true);
     }
@@ -235,13 +239,19 @@ public class ArtifactService {
             }
             // 设置代理
 
-            Tuple2<Long, String> tuple = null;
+            Tuple3<Long, String, String> tuple = null;
             Tuple2<Proxy, okhttp3.Authenticator> proxyTuple = buildProxy(fileURL);
             Proxy proxy = proxyTuple.v1;
             okhttp3.Authenticator proxyAuthenticator = proxyTuple.v2;
             try {
                 tuple = downloadFileWithResume(
-                        fileURL, saveFilePath, proxy, proxyAuthenticator, jobId, artifact.getEtag());
+                        fileURL,
+                        saveFilePath,
+                        proxy,
+                        proxyAuthenticator,
+                        jobId,
+                        artifact.getEtag(),
+                        artifact.getLastModified());
                 job.setEndTime(new Date());
                 job.setStatus(1);
                 job.setProgress("100%");
@@ -267,13 +277,14 @@ public class ArtifactService {
         }
     }
 
-    public Tuple2<Long, String> downloadFileWithResume(
+    public Tuple3<Long, String, String> downloadFileWithResume(
             String fileURL,
             String saveFilePath,
             Proxy proxy,
             okhttp3.Authenticator proxyAuthenticator,
             Long jobId,
-            String eTagPersistence)
+            String eTagPersistence,
+            String lastModifiedPersistence)
             throws Exception {
         File file = new File(saveFilePath);
         String rawUrl = getPathFromURL(fileURL);
@@ -282,16 +293,18 @@ public class ArtifactService {
 
         long remoteFileSize = -1;
         String eTag = "";
-        Tuple2<Long, String> tuple = null;
+        String lastModified = "";
+        Tuple3<Long, String, String> tuple = null;
 
         try {
-            tuple = getRemoteFileSize(fileURL, proxy, proxyAuthenticator);
+            Tuple3<Long, String, String> remoteInfo = getRemoteFileSize(fileURL, proxy, proxyAuthenticator);
+            if (remoteInfo != null) {
+                remoteFileSize = remoteInfo.v1;
+                eTag = remoteInfo.v2;
+                lastModified = remoteInfo.v3;
+            }
         } catch (Exception ignore) {
 
-        }
-        if (tuple != null) {
-            remoteFileSize = tuple.v1;
-            eTag = tuple.v2;
         }
 
         String progressFilePath = StringUtils.joinWith(
@@ -329,6 +342,18 @@ public class ArtifactService {
                             existingFileSize,
                             eTag,
                             eTagPersistence);
+                }
+            } else if (StringUtils.isNotBlank(lastModifiedPersistence) && StringUtils.isNotBlank(lastModified)) {
+                if (!Strings.CI.equals(lastModified, lastModifiedPersistence)) {
+                    existingFileSize = 0;
+                    info(
+                            jobId,
+                            "对比Last-Modified不等，开启强制下载, jobId={}, saveFilePath={} remoteFileSize={}, existingFileSize={}, lastModified={}",
+                            jobId,
+                            saveFilePath,
+                            remoteFileSize,
+                            existingFileSize,
+                            lastModified);
                 }
             }
         }
@@ -494,11 +519,12 @@ public class ArtifactService {
     /**
      * 获取远程文件的大小
      */
-    private Tuple2<Long, String> getRemoteFileSize(
+    private Tuple3<Long, String, String> getRemoteFileSize(
             String fileURL, Proxy proxy, okhttp3.Authenticator proxyAuthenticator) throws IOException {
-        Tuple2<Long, String> tuple2 = null;
+        Tuple3<Long, String, String> tuple3 = null;
         long contentLength = -1;
         String eTag = "";
+        String lastModified = "";
 
         OkHttpClient client = createOkHttpClient(proxy, proxyAuthenticator);
         Request request = new Request.Builder()
@@ -533,7 +559,7 @@ public class ArtifactService {
                 } catch (Exception ignored) {
 
                 }
-                tuple2 = Tuple.tuple(contentLength, eTag);
+                tuple3 = Tuple.tuple(contentLength, eTag, lastModified);
 
             } else {
                 throw new IOException("请求失败: " + response.code() + " " + response.message());
@@ -544,7 +570,7 @@ public class ArtifactService {
                 IOUtils.closeQuietly(response.body());
             }
         }
-        return tuple2;
+        return tuple3;
     }
 
     /**
