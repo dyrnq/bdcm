@@ -49,6 +49,13 @@
         <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
     </Match>
 
+    <!-- Acceptable: suppress exceptions when getting remote file info -->
+    <Match>
+        <Class name="com.dyrnq.bdcm.service.ArtifactService"/>
+        <Method name="downloadFileWithResume"/>
+        <Bug pattern="DE_MIGHT_IGNORE"/>
+    </Match>
+
     <!-- Uncalled private methods (may be used via reflection or left for future) -->
     <Match>
         <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
