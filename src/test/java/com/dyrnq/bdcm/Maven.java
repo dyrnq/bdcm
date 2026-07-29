@@ -14,8 +14,7 @@ public class Maven {
 
     public static void main(String[] args) {
 
-        String xml =
-                """
+        String xml = """
                 <dependency>
                     <groupId>org.apache.doris</groupId>
                     <artifactId>flink-doris-connector-1.20</artifactId>
