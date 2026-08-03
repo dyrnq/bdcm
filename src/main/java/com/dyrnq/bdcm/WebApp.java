@@ -81,14 +81,17 @@ public class WebApp {
                         "JWT secret is still using the default value from app.yml. Please generate a unique key with JwtUtils.createKey() for production deployments.");
             }
 
-            app.filter((c, chain) -> {
-                String path = c.path();
-                while (path.contains("//")) {
-                    path = path.replace("//", "/");
-                }
-                c.pathNew(path);
-                chain.doFilter(c);
-            });
+            app.chains()
+                    .addFilter(
+                            (c, chain) -> {
+                                String path = c.path();
+                                while (path.contains("//")) {
+                                    path = path.replace("//", "/");
+                                }
+                                c.pathNew(path);
+                                chain.doFilter(c);
+                            },
+                            0);
 
             WoodConfig.isUsingValueExpression = false;
             if (Solon.cfg().isDebugMode()) {
