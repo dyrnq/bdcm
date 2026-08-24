@@ -14,6 +14,7 @@ import com.dyrnq.utils.IDUtils;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.*;
+import io.minio.errors.MinioException;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -622,7 +623,7 @@ public class ArtifactService {
     private void uploadObjectS3(String localFilePath, String object)
             throws IOException, ServerException, InsufficientDataException, ErrorResponseException,
                     NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException,
-                    InternalException {
+                    InternalException, MinioException {
         String accessKey = repoProps.getS3().getAccessKey();
         String secretKey = repoProps.getS3().getSecretKey();
         String bucket = repoProps.getS3().getBucket();
