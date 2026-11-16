@@ -36,6 +36,10 @@
              the transitive okhttp artifact (still a stub; real classes come from
              okhttp-jvm 5.5.1 declared as a direct dep above). -->
         <okhttp.version>5.5.1</okhttp.version>
+        <!-- Override solon-parent's pinned slf4j.version (2.0.18). slf4j-api is in the
+             classpath (inherited from the parent's dependencies), so 2.0.20 is a real
+             upgrade; 2.0.20 only deprecates Marker's add/remove-child methods. -->
+        <slf4j.version>2.0.20</slf4j.version>
     </properties>
     <parent>
         <groupId>org.noear</groupId>
@@ -298,7 +302,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-common</artifactId>
-            <version>4.1.119.Final</version>
+            <version>4.2.20.Final</version>
         </dependency>
 
     </dependencies>
